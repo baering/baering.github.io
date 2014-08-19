@@ -17,59 +17,57 @@
 
 		</script>
 
-		<div ng-controller="MapController" class="row">
-			<div class="col-md-6 col-xs-12">
-				<h2 ng-show="loading" class="text-center" style="color: #fff">Loading data</h2>
-				<div id="volcano-chart" style="width: 95%"></div>
+		<div ng-controller="MapController" class="container-fluid">
+			<div class="row">
+				<div class="col-md-6 col-xs-12">
+					<h2 ng-show="loading" class="text-center" style="color: #fff">Loading data</h2>
+					<div id="volcano-chart" style="width: 95%"></div>
 
-				<p class="text-center">Graph displaying last <strong>{{ graphDisplayHours }}</strong> hours, move the slider below to change it</p>
-				<input type="range" min="1" max="48" ng-model="graphDisplayHours" class="text-center graph-hours" ng-change="graphFilterChange()" />
-			</div>
-			<div class="col-md-6 col-xs-12">
-				<h2>Seismic activity - last 48 hours</h2>
+					<p class="text-center">Graph displaying last <strong>{{ graphDisplayHours }}</strong> hours, move the slider below to change it</p>
+					<input type="range" min="1" max="48" ng-model="graphDisplayHours" class="text-center graph-hours" ng-change="graphFilterChange()" />
+				</div>
+				<div class="col-md-6 col-xs-12">
+					<h2>Seismic activity - last 48 hours</h2>
 
-				<p>Showing last <strong>{{ numberOfEarthquakesDisplayedInTable }}</strong> below</p>
-				<div class="row">
-					<div class="col-md-12">
-						<div class="quake-list">
-							<table class="table table-condensed table-striped table-hover">
-								<thead>
-									<th>Location (is)</th>
-									<th>Size</th>
-									<th>Time</th>
-									<th>Depth</th>
-									<th>Quality</th>
-								</thead>
-								<tbody>
-									<tr ng-repeat="earthquake in earthquakes | orderBy: 'occuredAt':true | limitTo: numberOfEarthquakesDisplayedInTable" class="{{ earthquakeTableColor(earthquake) }}">
-										<td>{{ earthquake.humanReadableLocation }}</td>
-										<td>{{ earthquake.size }}</td>
-										<td>{{ timeSince(earthquake.occuredAt) }}</td>
-										<td>{{ earthquake.depth }}km</td>
-										<td>{{ earthquake.quality }}%</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
+					<p>Showing last <strong>{{ numberOfEarthquakesDisplayedInTable }}</strong> below</p>
+					<div class="quake-list">
+						<table class="table table-condensed table-striped table-hover">
+							<thead>
+								<th>Location (is)</th>
+								<th>Size</th>
+								<th>Time</th>
+								<th>Depth</th>
+								<th>Quality</th>
+							</thead>
+							<tbody>
+								<tr ng-repeat="earthquake in earthquakes | orderBy: 'occuredAt':true | limitTo: numberOfEarthquakesDisplayedInTable" class="{{ earthquakeTableColor(earthquake) }}">
+									<td>{{ earthquake.humanReadableLocation }}</td>
+									<td>{{ earthquake.size }}</td>
+									<td>{{ timeSince(earthquake.occuredAt) }}</td>
+									<td>{{ earthquake.depth }}km</td>
+									<td>{{ earthquake.quality }}%</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 
-						<div class="webcam-wrapper">
-							<object type="application/x-shockwave-flash" data="http://www.livefromiceland.is/files/player.swf" width="95%" height="95%" bgcolor="#000000" id="player" name="player" tabindex="0">
-								<param name="allowfullscreen" value="true">
-								<param name="allowscriptaccess" value="always">
-								<param name="scale" value="exactfit">
-								<param name="seamlesstabbing" value="true">
-								<param name="wmode" value="transparent">
-								<param name="flashvars" value="netstreambasepath=http%3A%2F%2Fwww.livefromiceland.is%2Fwebcams%2Fbardabunga%2F&amp;id=player&amp;bufferlength=1&amp;wmode=transparent&amp;autostart=true&amp;stretching=fill&amp;skin=%2FResources%2Ffonts%2Fbeelden.zip&amp;file=akureyri.stream&amp;streamer=rtmp%3A%2F%2F213.167.154.114%2Fmila%2F&amp;provider=rtmp&amp;controlbar.position=none">
-							</object>
-							<img src="http://www.livefromiceland.is/images/template/mila-mini.png" class="mila-logo" />
-							<p>Live webcam from <a href="http://www.livefromiceland.is/webcams/bardabunga/" target="_blank">http://www.livefromiceland.is/</a></p>
-						</div>
+					<div class="webcam-wrapper">
+						<object type="application/x-shockwave-flash" data="http://www.livefromiceland.is/files/player.swf" width="95%" height="95%" bgcolor="#000000" id="player" name="player" tabindex="0">
+							<param name="allowfullscreen" value="true">
+							<param name="allowscriptaccess" value="always">
+							<param name="scale" value="exactfit">
+							<param name="seamlesstabbing" value="true">
+							<param name="wmode" value="transparent">
+							<param name="flashvars" value="netstreambasepath=http%3A%2F%2Fwww.livefromiceland.is%2Fwebcams%2Fbardabunga%2F&amp;id=player&amp;bufferlength=1&amp;wmode=transparent&amp;autostart=true&amp;stretching=fill&amp;skin=%2FResources%2Ffonts%2Fbeelden.zip&amp;file=akureyri.stream&amp;streamer=rtmp%3A%2F%2F213.167.154.114%2Fmila%2F&amp;provider=rtmp&amp;controlbar.position=none">
+						</object>
+						<img src="http://www.livefromiceland.is/images/template/mila-mini.png" class="mila-logo" />
+						<p>Live webcam from <a href="http://www.livefromiceland.is/webcams/bardabunga/" target="_blank">http://www.livefromiceland.is/</a></p>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<p style="position:fixed; bottom: 5px; right: 10px">Created by <a href="mailto:baering90@gmail.com">Baering</a>, data provided by <a href="http://apis.is" target="_blank">apis.is</a> and caching provided by <a href="http://www.rasmuskr.dk" target="_blank">RasmusKr</a></p>
+		<p class="credit-list">Created by <a href="mailto:baering90@gmail.com">Baering</a>, data provided by <a href="http://apis.is" target="_blank">apis.is</a> and caching provided by <a href="http://www.rasmuskr.dk" target="_blank">RasmusKr</a></p>
 
 		<script src="thirdparty/jquery.min.js"></script>
 		<script src="bootstrap/js/bootstrap.min.js"></script>

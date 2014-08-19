@@ -22,3 +22,9 @@ body {
 	top: 90%;
 	left: 20px;
 }
+
+.credit-list {
+	position: fixed;
+	bottom: 5px;
+	right: 15px;
+}

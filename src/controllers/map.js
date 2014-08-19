@@ -231,7 +231,6 @@ app.controller("MapController", [
 						}
 					},
 					height: window.innerHeight - 90,
-					//width: window.innerHeight
 				},
 				tooltip: {
 					formatter: function () {
