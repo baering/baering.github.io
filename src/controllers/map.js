@@ -7,7 +7,7 @@ app.controller("MapController", [
 		var currentChart;
 
 		$scope.numberOfEarthquakesDisplayedInTable = 50;
-		$scope.graphDisplayHours = 24;
+		$scope.graphDisplayHours = 16;
 		$scope.refreshRate = 60;
 
 		$scope.earthquakes = [];
