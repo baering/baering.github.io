@@ -3,7 +3,7 @@ body {
 }
 
 .quake-list {
-	height: 400px;
+	height: 300px;
 	overflow: auto;
 }
 
@@ -11,4 +11,14 @@ body {
 	width: 40% !important;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+.webcam-wrapper {
+	margin-top: 20px;
+}
+
+.mila-logo {
+	position: absolute;
+	top: 90%;
+	left: 20px;
 }

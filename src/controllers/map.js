@@ -322,5 +322,8 @@ app.controller("MapController", [
 		$scope.timeSince = function(unix) {
 			return moment(unix).fromNow();
 		};
+
+		// I know jQuery in angular controllers is a sin, sorry.
+		$(".webcam-wrapper").height($(".webcam-wrapper").width() * 0.56);
 	}
 ]);
