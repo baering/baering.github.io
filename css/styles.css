@@ -1,0 +1,14 @@
+body {
+	background-color: #2a2a2b;
+}
+
+.quake-list {
+	height: 400px;
+	overflow: auto;
+}
+
+.graph-hours {
+	width: 40% !important;
+	margin-left: auto;
+	margin-right: auto;
+}

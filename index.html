@@ -2,11 +2,8 @@
 <html ng-app="BulgeApp">
 	<head>
 		<title>3dBulge</title>
-		<style>
-			body {
-				background-color: #2a2a2b;
-			}
-		</style>
+		<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="css/styles.css">
 	</head>
 	<body>
 		<script>
@@ -20,11 +17,49 @@
 
 		</script>
 
-		<div ng-controller="MapController">
-			<div id="volcano-chart" style="height: 600px; width: 800px"></div>
+		<div ng-controller="MapController" class="row">
+			<div class="col-md-6 col-xs-12">
+				<h2 ng-show="loading" class="text-center" style="color: #fff">Loading data</h2>
+				<div id="volcano-chart" style="width: 95%"></div>
+
+				<p class="text-center">Graph displaying last <strong>{{ graphDisplayHours }}</strong> hours, move the slider below to change it</p>
+				<input type="range" min="1" max="48" ng-model="graphDisplayHours" class="text-center graph-hours" ng-change="graphFilterChange()" />
+			</div>
+			<div class="col-md-6 col-xs-12">
+				<h2>Seismic activity - last 48 hours</h2>
+
+				<p>Showing last <strong>{{ numberOfEarthquakesDisplayedInTable }}</strong> below</p>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="quake-list">
+							<table class="table table-condensed table-striped table-hover">
+								<thead>
+									<th>Location (is)</th>
+									<th>Size</th>
+									<th>Time</th>
+									<th>Depth</th>
+									<th>Quality</th>
+								</thead>
+								<tbody>
+									<tr ng-repeat="earthquake in earthquakes | orderBy: 'occuredAt':true | limitTo: numberOfEarthquakesDisplayedInTable" class="{{ earthquakeTableColor(earthquake) }}">
+										<td>{{ earthquake.humanReadableLocation }}</td>
+										<td>{{ earthquake.size }}</td>
+										<td>{{ timeSince(earthquake.occuredAt) }}</td>
+										<td>{{ earthquake.depth }}km</td>
+										<td>{{ earthquake.quality }}%</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
+		<p style="position:fixed; bottom: 5px; right: 10px">Created by <a href="mailto:baering90@gmail.com">Baering</a>, data provided by <a href="http://apis.is" target="_blank">apis.is</a></p>
+
 		<script src="thirdparty/jquery.min.js"></script>
+		<script src="bootstrap/js/bootstrap.min.js"></script>
 		<script src="thirdparty/moment.js"></script>
 		<script src="thirdparty/angular.min.js"></script>
 		<script src="thirdparty/highcharts.js"></script>

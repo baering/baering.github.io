@@ -6,30 +6,82 @@ app.controller("MapController", [
 		var earthquakes = {};
 		var currentChart;
 
-		function earthquakesToCoordinates() {
-			var result = [];
+		$scope.numberOfEarthquakesDisplayedInTable = 50;
+		$scope.graphDisplayHours = 24;
+		$scope.refreshRate = 60;
+
+		$scope.earthquakes = [];
+
+		function sortEarthquakes(a, b) {
+			return a.occuredAt < b.occuredAt;
+		}
+
+		function earthquakeOccuredInLessThanHours(earthquake, hours, now) {
+			var hoursInMs = hours * 3600 * 1000;
+			var hoursAgo = now - hoursInMs;
+
+			if(earthquake.occuredAt >= hoursAgo) {
+				return true;
+			}
+			return false;
+		}
+
+		function redrawWithFilter() {
+			var earthquakesMatchingFilter = getChartCoordinatesForEarthquakes($scope.earthquakes);
+			makeNewChart(earthquakesMatchingFilter);
+		}
+
+		var redrawTimeout;
+		$scope.graphFilterChange = function() {
+			if(redrawTimeout) {
+				$timeout.cancel(redrawTimeout);
+				redrawTimeout = undefined;
+			}
+			redrawTimeout = $timeout(redrawWithFilter, 1500);
+		};
+
+		function getChartCoordinatesForEarthquakes(data) {
+			//data = data.sort(sortEarthquakes);
 
 			var nowInUnixTime = new Date().getTime();
 
-			var keys = Object.keys(earthquakes);
-			for(var i = 0; i < keys.length; ++i) {
-				var currentEarthquake = earthquakes[keys[i]];
+			var result = [];
+			for(var i = 0; i < data.length; ++i) {
+				var currentEarthquake = data[i];
 
-				result.push({
-					x: currentEarthquake.longitude, 
-					y: currentEarthquake.depth, 
-					z: currentEarthquake.latitude,
-					richter: currentEarthquake.size,
-					timeAgo: moment(currentEarthquake.occuredAt).fromNow(),
-					marker: {
-						lineColor: "#123F3F",
-						lineWidth: 1,
-						radius: Math.pow(0.5 + currentEarthquake.size, 2.7),
-					}
-				});
+				if(earthquakeOccuredInLessThanHours(currentEarthquake, $scope.graphDisplayHours, nowInUnixTime)) {
+					result.push({
+						x: currentEarthquake.longitude, 
+						y: currentEarthquake.depth, 
+						z: currentEarthquake.latitude,
+						richter: currentEarthquake.size,
+						timeAgo: $scope.timeSince(currentEarthquake.occuredAt),
+						marker: {
+							fillColor: currentEarthquake.color(nowInUnixTime),
+							lineColor: "#123F3F",
+							lineWidth: 1,
+							radius: Math.pow(0.5 + currentEarthquake.size, 2.7),
+						}
+					});
+				}
 			}
 
 			return result;
+		}
+
+		function addEarthquakesToChart(data, firstDraw) {
+			if(!currentChart) {
+				return;
+			}
+
+			var coordinates = getChartCoordinatesForEarthquakes(data);
+			for(var i = 0; i < coordinates.length; ++i) {
+				currentChart.series[0].addPoint(coordinates[i], !firstDraw);
+			}
+
+			if(firstDraw) {
+				currentChart.redraw();
+			}
 		}
 
 		var latitudeLimits = {
@@ -62,38 +114,65 @@ app.controller("MapController", [
 			updateLimitsForObject(depth, depthLimits);
 		}
 
-		function addNewEarthquakes(data) {
-			var changed = false;
+		function registerNewEarthquakes(data) {
+			for(var i = 0; i < data.length; ++i) {
+				var currentEarthquake = data[i];
+
+				if(earthquakes[currentEarthquake.occuredAt] === undefined) {
+					$scope.earthquakes.push(currentEarthquake);
+					earthquakes[currentEarthquake.occuredAt] = currentEarthquake;
+					updateLimits(currentEarthquake.latitude, currentEarthquake.longitude, currentEarthquake.depth);
+				}
+			}
+		}
+
+		function newEarthquakes(data) {
+			var result = [];
 
 			for(var i = 0; i < data.length; ++i) {
 				var currentEarthquake = data[i];
 
 				if(earthquakes[currentEarthquake.occuredAt] === undefined) {
-					earthquakes[currentEarthquake.occuredAt] = currentEarthquake;
-					updateLimits(currentEarthquake.latitude, currentEarthquake.longitude, currentEarthquake.depth);
-					changed = true;
+					result.push(currentEarthquake);
 				}
 			}
 
-			return changed;
+			registerNewEarthquakes(data);
+
+			return result;
 		}
 
 		function getEarthquakes() {
 			EarthquakeService.getEarthquakes().then(function(data) {
 				if(data.length > 0) {
-					var moreWereAdded = addNewEarthquakes(data);
-					if(moreWereAdded) {
+					var quakes = newEarthquakes(data);
+					if(quakes.length > 0) {
 						console.log("New earthquakes detected from last update. Redrawing chart.");
 
-						var coordinates = earthquakesToCoordinates();
-						makeNewChart(coordinates);
+						addEarthquakesToChart(quakes);
 					}
 
-					$timeout(getEarthquakes, 30000);
+					$timeout(getEarthquakes, $scope.refreshRate * 1000);
 				}
 			});
 		}
-		getEarthquakes();
+
+		$scope.loading = true;
+		function init() {
+			EarthquakeService.getEarthquakes().then(function(data) {
+				if(data.length > 0) {
+					var quakes = newEarthquakes(data);
+					makeNewChart([]);
+					if(quakes.length > 0) {
+						addEarthquakesToChart(quakes, true);
+					}
+
+					$scope.loading = false;
+					$timeout(getEarthquakes, $scope.refreshRate * 1000);
+				}
+			});
+		}
+		init();
 
 		function registerClickEventOnChart(chart) {
 			$(chart.container).bind('mousedown.hc touchstart.hc', function (e) {
@@ -151,14 +230,14 @@ app.controller("MapController", [
 							side: { size: 1, color: 'rgba(0,0,0,0.06)' }
 						}
 					},
-					height: window.innerHeight,
-					width: window.innerHeight
+					height: window.innerHeight - 90,
+					//width: window.innerHeight
 				},
 				tooltip: {
 					formatter: function () {
 						var result = "";
 		
-						result += "<p><strong>Happend</strong> " + this.point.timeAgo + ", ";
+						result += "<p><strong>Happened</strong> " + this.point.timeAgo + ", ";
 						result += "<strong>size</strong> " + this.point.richter + "</p>";
 
 						return result;
@@ -168,7 +247,7 @@ app.controller("MapController", [
 					text: 'Bardarbunga'
 				},
 				subtitle: {
-					text: '3d visual - updated every 30 sec'
+					text: "3d visual - updated every " + $scope.refreshRate+ " sec"
 				},
 				plotOptions: {
 					scatter: {
@@ -222,11 +301,26 @@ app.controller("MapController", [
 					colorByPoint: false,
 					data: data,
 					turboThreshold: 13337
-					//data: [[1, 6, 5], [8, 7, 9], [1, 3, 4], [4, 6, 8], [5, 7, 7], [6, 9, 6], [7, 0, 5], [2, 3, 3], [3, 9, 8], [3, 6, 5], [4, 9, 4], [2, 3, 3], [6, 9, 9], [0, 7, 0], [7, 7, 9], [7, 2, 9], [0, 6, 2], [4, 6, 7], [3, 7, 7], [0, 1, 7], [2, 8, 6], [2, 3, 7], [6, 4, 8], [3, 5, 9], [7, 9, 5], [3, 1, 7], [4, 4, 2], [3, 6, 2], [3, 1, 6], [6, 8, 5], [6, 6, 7], [4, 1, 1], [7, 2, 7], [7, 7, 0], [8, 8, 9], [9, 4, 1], [8, 3, 4], [9, 8, 9], [3, 5, 3], [0, 2, 4], [6, 0, 2], [2, 1, 3], [5, 8, 9], [2, 1, 1], [9, 7, 6], [3, 0, 2], [9, 9, 0], [3, 4, 8], [2, 6, 1], [8, 9, 2], [7, 6, 5], [6, 3, 1], [9, 3, 1], [8, 9, 3], [9, 1, 0], [3, 8, 7], [8, 0, 0], [4, 9, 7], [8, 6, 2], [4, 3, 0], [2, 3, 5], [9, 1, 4], [1, 1, 4], [6, 0, 2], [6, 1, 6], [3, 8, 8], [8, 8, 7], [5, 5, 0], [3, 9, 6], [5, 4, 3], [6, 8, 3], [0, 1, 5], [6, 7, 3], [8, 3, 2], [3, 8, 3], [2, 1, 6], [4, 6, 7], [8, 9, 9], [5, 4, 2], [6, 1, 3], [6, 9, 5], [4, 8, 2], [9, 7, 4], [5, 4, 2], [9, 6, 1], [2, 7, 3], [4, 5, 4], [6, 8, 1], [3, 4, 0], [2, 2, 6], [5, 1, 2], [9, 9, 7], [6, 9, 9], [8, 4, 3], [4, 1, 7], [6, 2, 5], [0, 4, 9], [3, 5, 9], [6, 9, 1], [1, 9, 2]]
 				}],
 			});
 
 			registerClickEventOnChart(currentChart);
 		}
+
+		$scope.earthquakeTableColor = function(earthquake) {
+			if(earthquake.size >= 3) {
+				return "danger";
+			}
+			else if(earthquake.size >= 2) {
+				return "warning";
+			}
+			else {
+				return "";
+			}
+		};
+
+		$scope.timeSince = function(unix) {
+			return moment(unix).fromNow();
+		};
 	}
 ]);
