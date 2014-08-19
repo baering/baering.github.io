@@ -3,7 +3,7 @@ app.factory("EarthquakeService", [
     function($http) {
         return {
             getEarthquakes: function(data) {
-                return $http.get("http://apis.is/earthquake/is").then(
+                return $http.get("http://apisis.rasmuskr.dk/earthquake/is").then(
                     function(response) {
                         var earthquakes = [];
 
