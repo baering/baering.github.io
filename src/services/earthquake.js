@@ -12,7 +12,7 @@ app.factory("EarthquakeService", [
                                 var currentEarthquakeData = response.data.results[i];
                                 var earthquake = new Earthquake(currentEarthquakeData);
                                 if(earthquake.isValid()) {
-                                    earthquakes.push(new Earthquake(currentEarthquakeData));
+                                    earthquakes.push(earthquake);
                                 }
                             }
                         }
