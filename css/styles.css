@@ -23,8 +23,18 @@ body {
 	left: 20px;
 }
 
+.mila {
+	opacity: 0.4;
+}
+
+.mila:hover {
+	opacity: 1;
+}
+
 .credit-list {
 	position: fixed;
-	bottom: 5px;
+	bottom: 0;
 	right: 15px;
+	background-color: #2a2a2b;
+	padding: 5px 5px 2px 10px;
 }

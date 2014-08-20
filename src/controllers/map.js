@@ -8,16 +8,30 @@ app.controller("MapController", [
 
 		$scope.numberOfEarthquakesDisplayedInTable = 50;
 		$scope.graphDisplayHours = 16;
+		$scope.graphDisplayQuakeSize = 0;
 		$scope.refreshRate = 60;
 
 		$scope.earthquakes = [];
 
-		function earthquakeOccuredInLessThanHours(earthquake, hours, now) {
-			var hoursInMs = hours * 3600 * 1000;
+		function earthquakeIsEqualOrLargerThanFilter(earthquake) {
+			return earthquake.size >= $scope.graphDisplayQuakeSize;
+		}
+
+		function earthquakeOccuredInLessThanHours(earthquake, now) {
+			var hoursInMs = $scope.graphDisplayHours * 3600 * 1000;
 			var hoursAgo = now - hoursInMs;
 
 			if(earthquake.occuredAt >= hoursAgo) {
 				return true;
+			}
+			return false;
+		}
+
+		function earthquakeMatchesFilters(earthquake, now) {
+			if(earthquakeOccuredInLessThanHours(earthquake, now)) {
+				if(earthquakeIsEqualOrLargerThanFilter(earthquake)) {
+					return true;
+				}
 			}
 			return false;
 		}
@@ -33,7 +47,7 @@ app.controller("MapController", [
 				$timeout.cancel(redrawTimeout);
 				redrawTimeout = undefined;
 			}
-			redrawTimeout = $timeout(redrawWithFilter, 1500);
+			redrawTimeout = $timeout(redrawWithFilter, 1000);
 		};
 
 		function getChartCoordinatesForEarthquakes(data) {
@@ -43,7 +57,7 @@ app.controller("MapController", [
 			for(var i = 0; i < data.length; ++i) {
 				var currentEarthquake = data[i];
 
-				if(earthquakeOccuredInLessThanHours(currentEarthquake, $scope.graphDisplayHours, nowInUnixTime)) {
+				if(earthquakeMatchesFilters(currentEarthquake, nowInUnixTime)) {
 					result.push({
 						x: currentEarthquake.longitude, 
 						y: currentEarthquake.depth, 

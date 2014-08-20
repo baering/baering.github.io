@@ -23,8 +23,17 @@
 					<h2 ng-show="loading" class="text-center" style="color: #fff">Loading data</h2>
 					<div id="volcano-chart" style="width: 95%"></div>
 
-					<p class="text-center">Graph displaying last <strong>{{ graphDisplayHours }}</strong> hours, move the slider below to change it</p>
-					<input type="range" min="1" max="48" ng-model="graphDisplayHours" class="text-center graph-hours" ng-change="graphFilterChange()" />
+					<div class="row">
+						<div class="col-md-6 col-xs-6">
+							<p class="text-center" title="Move the slider below to change it">Graph displaying last <strong>{{ graphDisplayHours }}</strong> hours</p>
+							<input type="range" min="1" max="48" ng-model="graphDisplayHours" class="text-center graph-hours" ng-change="graphFilterChange()" />
+						</div>
+						<div class="col-md-6 col-xs-6">
+							<p class="text-center" title="Move the slider below to change it">Displaying earthquakes larger than <strong>{{ graphDisplayQuakeSize }}</strong></p>
+							<input type="range" min="0" max="3" step="0.2" ng-model="graphDisplayQuakeSize" class="text-center graph-hours" ng-change="graphFilterChange()" />
+						</div>
+					</div>
+					
 				</div>
 				<div class="col-md-6 col-xs-12">
 					<h2>Seismic activity - last 48 hours</h2>
@@ -61,7 +70,7 @@
 							<param name="flashvars" value="netstreambasepath=http%3A%2F%2Fwww.livefromiceland.is%2Fwebcams%2Fbardabunga%2F&amp;id=player&amp;bufferlength=1&amp;wmode=transparent&amp;autostart=true&amp;stretching=fill&amp;skin=%2FResources%2Ffonts%2Fbeelden.zip&amp;file=akureyri.stream&amp;streamer=rtmp%3A%2F%2F213.167.154.114%2Fmila%2F&amp;provider=rtmp&amp;controlbar.position=none">
 						</object>
 						<img src="http://www.livefromiceland.is/images/template/mila-mini.png" class="mila-logo" />
-						<p class="text-muted">Live webcam from <a href="http://www.livefromiceland.is/webcams/bardabunga/" target="_blank">http://www.livefromiceland.is/</a></p>
+						<p class="mila">Live webcam from <a href="http://www.livefromiceland.is/webcams/bardabunga/" target="_blank">http://www.livefromiceland.is/</a></p>
 					</div>
 				</div>
 			</div>
