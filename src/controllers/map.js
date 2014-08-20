@@ -12,10 +12,6 @@ app.controller("MapController", [
 
 		$scope.earthquakes = [];
 
-		function sortEarthquakes(a, b) {
-			return a.occuredAt < b.occuredAt;
-		}
-
 		function earthquakeOccuredInLessThanHours(earthquake, hours, now) {
 			var hoursInMs = hours * 3600 * 1000;
 			var hoursAgo = now - hoursInMs;
@@ -41,8 +37,6 @@ app.controller("MapController", [
 		};
 
 		function getChartCoordinatesForEarthquakes(data) {
-			//data = data.sort(sortEarthquakes);
-
 			var nowInUnixTime = new Date().getTime();
 
 			var result = [];
@@ -53,7 +47,7 @@ app.controller("MapController", [
 					result.push({
 						x: currentEarthquake.longitude, 
 						y: currentEarthquake.depth, 
-						z: currentEarthquake.latitude,
+						z: latitudeLimits.min + (latitudeLimits.max -currentEarthquake.latitude),
 						richter: currentEarthquake.size,
 						timeAgo: $scope.timeSince(currentEarthquake.occuredAt),
 						marker: {
@@ -237,7 +231,7 @@ app.controller("MapController", [
 						var result = "";
 		
 						result += "<p><strong>Happened</strong> " + this.point.timeAgo + ", ";
-						result += "<strong>size</strong> " + this.point.richter + "</p>";
+						result += "<strong>size</strong> " + this.point.richter + "</p> ";
 
 						return result;
 					}
