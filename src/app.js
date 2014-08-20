@@ -5,13 +5,6 @@ var app = angular.module("BulgeApp", []);
  * @author Torstein Honsi
  */
 
-// Load the fonts
-Highcharts.createElement('link', {
-   href: 'http://fonts.googleapis.com/css?family=Unica+One',
-   rel: 'stylesheet',
-   type: 'text/css'
-}, null, document.getElementsByTagName('head')[0]);
-
 Highcharts.getOptions().colors = $.map(Highcharts.getOptions().colors, function (color) {
     return {
         radialGradient: {
@@ -37,7 +30,7 @@ Highcharts.theme = {
          ]
       },
       style: {
-         fontFamily: "'Unica One', sans-serif"
+         fontFamily: "sans-serif"
       },
       plotBorderColor: '#606063'
    },

@@ -215,7 +215,7 @@ app.controller("MapController", [
 						enabled: true,
 						alpha: 10,
 						beta: 30,
-						depth: 250,
+						depth: 300,
 						viewDistance: 5,
 
 						frame: {
