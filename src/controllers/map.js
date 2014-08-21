@@ -7,8 +7,11 @@ app.controller("MapController", [
 		var currentChart;
 
 		$scope.numberOfEarthquakesDisplayedInTable = 50;
+
 		$scope.graphDisplayHours = 16;
 		$scope.graphDisplayQuakeSize = 0;
+		$scope.graphDisplayOnlyVerified = true;
+
 		$scope.refreshRate = 60;
 
 		$scope.earthquakes = [];
@@ -30,7 +33,12 @@ app.controller("MapController", [
 		function earthquakeMatchesFilters(earthquake, now) {
 			if(earthquakeOccuredInLessThanHours(earthquake, now)) {
 				if(earthquakeIsEqualOrLargerThanFilter(earthquake)) {
-					return true;
+					if(!$scope.graphDisplayOnlyVerified) {
+						return true;
+					}
+					else {
+						return earthquake.verified;
+					}
 				}
 			}
 			return false;
@@ -57,6 +65,8 @@ app.controller("MapController", [
 			for(var i = 0; i < data.length; ++i) {
 				var currentEarthquake = data[i];
 
+				var drawRadius = Math.pow(0.8 + currentEarthquake.size, 2);
+
 				if(earthquakeMatchesFilters(currentEarthquake, nowInUnixTime)) {
 					result.push({
 						x: currentEarthquake.longitude, 
@@ -68,7 +78,7 @@ app.controller("MapController", [
 							fillColor: currentEarthquake.color(nowInUnixTime),
 							lineColor: "#123F3F",
 							lineWidth: 1,
-							radius: Math.pow(0.5 + currentEarthquake.size, 2.7),
+							radius: drawRadius
 						}
 					});
 				}
@@ -122,14 +132,57 @@ app.controller("MapController", [
 			updateLimitsForObject(depth, depthLimits);
 		}
 
+		$scope.allowShaking = true;
+		$scope.shaking = false;
+
+		// To not shake the webcam at page load
+		var firstShake = true;
+
+		function shakeWebCam(magnitude) {
+			if(firstShake) {
+				firstShake = false;
+				return;
+			}
+
+			if($scope.allowShaking) {
+				if(!$scope.shaking) {
+					$scope.shaking = true;
+					$timeout(function() {
+						$scope.shaking = false;
+					}, 1000 * magnitude);
+				}
+			}
+		}
+
 		function registerNewEarthquakes(data) {
+			var biggestNewEarthquakeMagnitude = -100000;
+			var newEarthquake = false;
+
 			for(var i = 0; i < data.length; ++i) {
 				var currentEarthquake = data[i];
 
 				if(earthquakes[currentEarthquake.occuredAt] === undefined) {
+					newEarthquake = true;
+
+					if(currentEarthquake.size > biggestNewEarthquakeMagnitude) {
+						biggestNewEarthquakeMagnitude = currentEarthquake.size;
+					}
+
 					$scope.earthquakes.push(currentEarthquake);
 					earthquakes[currentEarthquake.occuredAt] = currentEarthquake;
 					updateLimits(currentEarthquake.latitude, currentEarthquake.longitude, currentEarthquake.depth);
+				}
+			}
+
+			if(newEarthquake) {
+				shakeWebCam(biggestNewEarthquakeMagnitude);
+			}
+		}
+
+		function updateEarthquake(oldVersion, newVersion) {
+			for(var key in oldVersion) {
+				if(oldVersion.hasOwnProperty(key)) {
+					oldVersion[key] = newVersion[key];
 				}
 			}
 		}
@@ -143,6 +196,15 @@ app.controller("MapController", [
 				if(earthquakes[currentEarthquake.occuredAt] === undefined) {
 					result.push(currentEarthquake);
 				}
+				else {
+					var currentEarthquakeVerified = currentEarthquake.verified;
+					var currentVersionOfThisEarthquakeVerified = earthquakes[currentEarthquake.occuredAt].verified;
+
+					if(currentEarthquakeVerified && !currentVersionOfThisEarthquakeVerified) {
+						console.log("An earthquake has been verified, updating it's fields.");
+						updateEarthquake(earthquakes[currentEarthquake.occuredAt], currentEarthquake);
+					}
+				}
 			}
 
 			registerNewEarthquakes(data);
@@ -151,11 +213,11 @@ app.controller("MapController", [
 		}
 
 		function getEarthquakes() {
-			EarthquakeService.getEarthquakes().then(function(data) {
+			EarthquakeService.getEarthquakesLastHours(1).then(function(data) {
 				if(data.length > 0) {
 					var quakes = newEarthquakes(data);
 					if(quakes.length > 0) {
-						console.log("New earthquakes detected from last update. Redrawing chart.");
+						console.log("New earthquakes detected from last update. Updating chart.");
 
 						addEarthquakesToChart(quakes);
 					}
@@ -165,19 +227,21 @@ app.controller("MapController", [
 			});
 		}
 
+		function setInitialEarthquakeData(data) {
+			var quakes = newEarthquakes(data);
+			makeNewChart([]);
+			if(quakes.length > 0) {
+				addEarthquakesToChart(quakes, true);
+			}
+
+			$scope.loading = false;
+		}
+
 		$scope.loading = true;
 		function init() {
-			EarthquakeService.getEarthquakes().then(function(data) {
-				if(data.length > 0) {
-					var quakes = newEarthquakes(data);
-					makeNewChart([]);
-					if(quakes.length > 0) {
-						addEarthquakesToChart(quakes, true);
-					}
-
-					$scope.loading = false;
-					$timeout(getEarthquakes, $scope.refreshRate * 1000);
-				}
+			EarthquakeService.getEarthquakesLastHours(48).then(function(data) {
+				setInitialEarthquakeData(data);
+				$timeout(getEarthquakes, $scope.refreshRate * 1000);
 			});
 		}
 		init();
@@ -229,7 +293,7 @@ app.controller("MapController", [
 						enabled: true,
 						alpha: 10,
 						beta: 30,
-						depth: 300,
+						depth: 275,
 						viewDistance: 5,
 
 						frame: {
@@ -245,7 +309,7 @@ app.controller("MapController", [
 						var result = "";
 		
 						result += "<p><strong>Happened</strong> " + this.point.timeAgo + ", ";
-						result += "<strong>size</strong> " + this.point.richter + "</p> ";
+						result += "<strong>magnitude</strong> " + this.point.richter + "</p> ";
 
 						return result;
 					}

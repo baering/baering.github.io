@@ -1,14 +1,21 @@
 function Earthquake(data) {
-	this.occuredAt = new Date(data.timestamp).getTime(); // notað sem lykill líka
-	this.latitude = parseFloat(data.latitude);
-	this.longitude = parseFloat(data.longitude);
+	this.occuredAt = new Date(parseInt(data.date * 1000)).getTime(); // used as a key
+	this.latitude = parseFloat(data.lat);
+	this.longitude = parseFloat(data.long);
 	this.depth = parseFloat(data.depth);
 	this.size = parseFloat(data.size);
-	this.humanReadableLocation = data.humanReadableLocation;
+	this.verified = data.verified;
+
+	var humanReadable = "";
+	humanReadable += data.loc_dist + " ";
+	humanReadable += data.loc_dir + " ";
+	humanReadable += data.loc_name + " ";
+	this.humanReadableLocation = humanReadable;
+	
 	this.quality = data.quality;
 }
 
-// Skítamix til að athuga með Bárðarbungu
+// Checking if gps coordinates are near Bardarbunga
 Earthquake.prototype.isValid = function() {
 	if(this.latitude >= 64.35 && this.latitude <= 64.95) {
 		if(this.longitude >= -17.9 && this.longitude <= -16.4) {
