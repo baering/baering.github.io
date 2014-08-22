@@ -84,7 +84,7 @@ app.controller("MapController", [
 				}
 			}
 
-			return result;
+			return result.reverse();
 		}
 
 		function addEarthquakesToChart(data, firstDraw) {
@@ -355,12 +355,12 @@ app.controller("MapController", [
 					labels: {
 						enabled: true
 					},
-					gridLineWidth: 1
+					gridLineWidth: 1,
+					title: {
+						text: "Longitude"
+					}
 				},
 				zAxis: {
-					labels: {
-						enabled: true
-					},
 					min: latitudeLimits.max,
 					max: latitudeLimits.min
 				},
