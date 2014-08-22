@@ -203,6 +203,9 @@ app.controller("MapController", [
 					if(currentEarthquakeVerified && !currentVersionOfThisEarthquakeVerified) {
 						console.log("An earthquake has been verified, updating it's fields.");
 						updateEarthquake(earthquakes[currentEarthquake.occuredAt], currentEarthquake);
+						if($scope.graphDisplayOnlyVerified) {
+							result.push(currentEarthquake);
+						}
 					}
 				}
 			}
