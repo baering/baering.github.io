@@ -2,6 +2,7 @@
 <html ng-app="BulgeApp">
 	<head>
 		<title>3dBulge</title>
+		<meta name="description" content="Real time 3d visualization of the seismic activity in Bardarbunga" />
 		<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" type="text/css" href="css/styles.css">
 	</head>
@@ -18,6 +19,17 @@
 		</script>
 
 		<div ng-controller="MapController" class="container-fluid">
+			<div class="row">
+				<div class="col-md-offset-3 col-xs-offset-3 col-md-6 col-xs-6">
+					<div class="alert alert-warning alert-dismissible text-center" role="alert">
+						<button type="button" class="close" data-dismiss="alert">
+							<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+						</button>
+						<strong>A small eruption has started near Bardarbunga.</strong> <a href="http://www.ruv.is/frett/small-eruption-near-bardarbunga" target="_blank" onclick="ga('send', 'event', 'link', 'click', 'eruption_started', 1)">Source</a>
+					</div>
+				</div>
+			</div>
+
 			<div class="row">
 				<div class="col-md-6 col-xs-12">
 					<h2 ng-show="loading" class="text-center" style="color: #fff">Loading data</h2>
@@ -74,6 +86,7 @@
 						</table>
 					</div>
 
+					<!--
 					<div class="webcam-wrapper">
 						<object type="application/x-shockwave-flash" data="http://www.livefromiceland.is/files/player.swf" width="100%" height="100%" bgcolor="#000000" id="player" name="player" tabindex="0" class="webcam-content" ng-class="{ 'shaking': shaking }">
 							<param name="allowfullscreen" value="true">
@@ -84,19 +97,25 @@
 							<param name="flashvars" value="netstreambasepath=http%3A%2F%2Fwww.livefromiceland.is%2Fwebcams%2Fbardabunga%2F&amp;id=player&amp;bufferlength=1&amp;wmode=transparent&amp;autostart=true&amp;stretching=fill&amp;skin=%2FResources%2Ffonts%2Fbeelden.zip&amp;file=akureyri.stream&amp;streamer=rtmp%3A%2F%2F213.167.154.114%2Fmila%2F&amp;provider=rtmp&amp;controlbar.position=none">
 						</object>
 					</div>
-					<div class="row">
+					-->
+					<div class="row" style="margin-top: 20px">
 						<div class="col-md-6">
+							<!--
 							<p class="mila">Live webcam from <a href="http://www.livefromiceland.is/webcams/bardabunga/" target="_blank">http://www.livefromiceland.is/</a></p>
+						-->
+							<h4>Webcam currently unavailable</h4>
 						</div>
 						<div class="col-md-6">
 							<span ng-show="shaking" class="label label-warning pull-right">
 								New earthquakes
 							</span>
+							<!--
 							<span class="pull-right text-muted" ng-show="!shaking">
 								<label>
 									<input ng-model="allowShaking" type="checkbox" /> shake webcam on updates
 								</label>
 							</span>
+							-->
 						</div>
 					</div>
 				</div>
