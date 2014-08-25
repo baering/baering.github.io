@@ -17,8 +17,8 @@ function Earthquake(data) {
 
 // Checking if gps coordinates are near Bardarbunga
 Earthquake.prototype.isFromBardarbunga = function() {
-	if(this.latitude >= 64.35 && this.latitude <= 64.95) {
-		if(this.longitude >= -17.9 && this.longitude <= -16.4) {
+	if(this.latitude >= 64.35 && this.latitude <= 65.2) {
+		if(this.longitude >= -18 && this.longitude <= -16) {
 			return true;
 		}
 	}
