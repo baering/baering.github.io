@@ -28,20 +28,21 @@ Earthquake.prototype.isFromBardarbunga = function() {
 Earthquake.prototype.color = function(now) {
 	var diff = now - this.occuredAt;
 	var hours = diff / (60 * 60 * 1000);
+	var opacity = 0.75;
 
 	if(hours <= 4) {
-		return "#f00";
+		return "rgba(255,0,0," + opacity + ")";
 	}
 	else if(hours <= 12) {
-		return "#f60";
+		return "rgba(255, 102, 0," + opacity + ")";
 	}
 	else if(hours <= 24) {
-		return "#ff0";
+		return "rgba(255, 255, 0," + opacity + ")";
 	}
 	else if(hours <= 36) {
-		return "#36c";
+		return "rgba(51, 102, 204," + opacity + ")";
 	}
 	else {
-		return "#006";
+		return "rgba(0, 0, 102," + opacity + ")";
 	}
 };
