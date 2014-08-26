@@ -2,7 +2,8 @@
 <html ng-app="BulgeApp">
 	<head>
 		<title>3dBulge</title>
-		<meta name="description" content="Real time 3d visualization of the seismic activity in Bardarbunga" />
+		<meta http-equiv="content-type" content="text/html" charset="utf-8"/>
+		<meta name="description" content="Real time 3d visualization of the seismic activity in Bárðarbunga" />
 		<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" type="text/css" href="css/styles.css">
 	</head>
@@ -18,25 +19,12 @@
 
 		</script>
 
+		<div ng-include="'templates/navbar.html'"></div>
 		<div ng-controller="MapController" class="container-fluid">
 
-			<!--
 			<div class="row">
-				<div class="col-md-offset-3 col-xs-offset-3 col-md-6 col-xs-6">
-					<div class="alert alert-danger alert-dismissible text-center" role="alert">
-						<button type="button" class="close" data-dismiss="alert">
-							<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
-						</button>
-						<strong>A small eruption has started near Bardarbunga.</strong> <a href="http://www.ruv.is/frett/small-eruption-near-bardarbunga" target="_blank" onclick="ga('send', 'event', 'link', 'click', 'eruption_started', 1)">Source</a>
-					</div>
-				</div>
-			</div>
-			-->
-
-			<div class="row">
-				<div class="col-md-6 col-xs-12">
+				<div class="col-lg-5 col-md-12 col-xs-12">
 					<h2 ng-show="loading" class="text-center" style="color: #fff">Loading data</h2>
-					<div id="volcano-chart" style="width: 95%"></div>
 
 					<div class="row">
 						<div class="col-md-4 col-xs-4">
@@ -55,45 +43,49 @@
 							<input type="range" min="1" max="48" ng-model="graphDisplayHours" class="text-center graph-hours" ng-change="graphFilterChange()" />
 						</div>
 						<div class="col-md-4 col-xs-4">
-							<p class="text-center" title="Move the slider below to change it">Displaying earthquakes larger than <strong>{{ graphDisplayQuakeSize }}</strong></p>
+							<p class="text-center" title="Move the slider below to change it">Magnitude greater than <strong>{{ graphDisplayQuakeSize }}</strong></p>
 							<input type="range" min="0" max="4" step="0.2" ng-model="graphDisplayQuakeSize" class="text-center graph-hours" ng-change="graphFilterChange()" />
 						</div>
 					</div>
+
+					<div id="volcano-chart" style="width: 95%"></div>
 				</div>
 
-				<div class="col-md-6 col-xs-12">
-					<h2>Seismic activity - last 48 hours</h2>
-					<p class="text-muted">Showing last <strong>{{ numberOfEarthquakesDisplayedInTable }}</strong> below</p>
-					<div class="quake-list">
-						<table class="table table-condensed table-striped table-hover">
-							<thead>
-								<th>Verified</th>
-								<th>Location (is)</th>
-								<th>Magnitude</th>
-								<th>Time</th>
-								<th>Depth</th>
-								<th>Measurement quality</th>
-							</thead>
-							<tbody>
-								<tr ng-repeat="earthquake in earthquakes | orderBy: 'occuredAt':true | limitTo: numberOfEarthquakesDisplayedInTable" class="{{ earthquakeTableColor(earthquake) }}">
-									<td>
-										<span class="glyphicon" ng-class="{ 'glyphicon-ok earthquake-verified': earthquake.verified, 'glyphicon-remove earthquake-not-verified': !earthquake.verified }"></span>
-									</td>
-									<td>{{ earthquake.humanReadableLocation }}</td>
-									<td>{{ earthquake.size }}</td>
-									<td>{{ timeSince(earthquake.occuredAt) }}</td>
-									<td>{{ earthquake.depth }}km</td>
-									<td>{{ earthquake.quality }}%</td>
-								</tr>
-							</tbody>
-						</table>
+				<div class="col-lg-7 col-md-12 col-xs-12">
+					<div class="row">
+						<div class="col-md-6 col-xs-6">
+							<p class="text-muted">Location of earthquakes (approximation)</p>
+
+							<div id="volcano-chart-satellite"></div>
+						</div>
+						<div class="col-md-6 col-xs-6">
+							<p class="text-muted">Showing last <strong>{{ numberOfEarthquakesDisplayedInTable }}</strong> below</p>
+							<div class="quake-list">
+								<table class="table table-condensed table-striped table-hover">
+									<thead>
+										<th>Verified</th>
+										<th>Magnitude</th>
+										<th>Time</th>
+										<th>Depth</th>
+									</thead>
+									<tbody>
+										<tr ng-repeat="earthquake in earthquakes | orderBy: 'occuredAt':true | limitTo: numberOfEarthquakesDisplayedInTable" class="{{ earthquakeTableColor(earthquake) }}">
+											<td>
+												<span class="glyphicon" ng-class="{ 'glyphicon-ok earthquake-verified': earthquake.verified, 'glyphicon-remove earthquake-not-verified': !earthquake.verified }"></span>
+											</td>
+											<td>{{ earthquake.size }}</td>
+											<td>{{ timeSince(earthquake.occuredAt) }}</td>
+											<td>{{ earthquake.depth }}km</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
 					</div>
 
 					<div class="row" style="margin-top: 10px">
 						<div class="col-md-6">
-							<p class="mila">Live webcam from <a href="http://www.livefromiceland.is/webcams/bardabunga/" target="_blank">http://www.livefromiceland.is/</a></p>
-
-							<!--<h4>Webcam currently unavailable</h4>-->
+							<p class="text-muted">Live webcam from <a href="http://www.livefromiceland.is/webcams/bardabunga/" target="_blank">http://www.livefromiceland.is/</a></p>
 						</div>
 						<div class="col-md-6">
 							<span ng-show="shaking" class="label label-warning pull-right">
@@ -110,7 +102,7 @@
 					</div>
 					
 					<div class="webcam-wrapper">
-						<object type="application/x-shockwave-flash" data="http://www.livefromiceland.is/files/player.swf" width="100%" height="100%" bgcolor="#000000" id="player" name="player" tabindex="0" class="webcam-content" ng-class="{ 'shaking': shaking }">
+						<object type="application/x-shockwave-flash" data="http://www.livefromiceland.is/files/player.swf" width="100%" height="100%" bgcolor="#000000" name="player" tabindex="0" class="webcam-content" ng-class="{ 'shaking': shaking }">
 							<param name="allowfullscreen" value="true">
 							<param name="allowscriptaccess" value="always">
 							<param name="scale" value="exactfit">
@@ -122,8 +114,6 @@
 				</div>
 			</div>
 		</div>
-
-		<p class="credit-list">Created by <a href="mailto:baering90@gmail.com">Baering</a>, data by <a href="http://en.vedur.is/earthquakes-and-volcanism/earthquakes/" target="_blank">vedur.is</a> and caching by <a href="http://www.rasmuskr.dk" target="_blank">RasmusKr</a></p>
 
 		<script src="thirdparty/jquery.min.js"></script>
 		<script src="bootstrap/js/bootstrap.min.js"></script>

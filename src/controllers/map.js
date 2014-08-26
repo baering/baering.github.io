@@ -4,7 +4,9 @@ app.controller("MapController", [
 	"$timeout",
 	function($scope, EarthquakeService, $timeout) {
 		var earthquakes = {};
-		var currentChart;
+
+		var current3dChart;
+		var current2dChart;
 
 		$scope.numberOfEarthquakesDisplayedInTable = 50;
 
@@ -46,7 +48,8 @@ app.controller("MapController", [
 
 		function redrawWithFilter() {
 			var earthquakesMatchingFilter = getChartCoordinatesForEarthquakes($scope.earthquakes);
-			makeNewChart(earthquakesMatchingFilter);
+			makeNew3dChart(earthquakesMatchingFilter);
+			makeNew2dChart(get3dCoordinatesAs2d(earthquakesMatchingFilter));
 		}
 
 		var redrawTimeout;
@@ -57,6 +60,29 @@ app.controller("MapController", [
 			}
 			redrawTimeout = $timeout(redrawWithFilter, 1000);
 		};
+
+		function get3dCoordinatesAs2d(data) {
+			var result = [];
+
+			for(var i = 0; i < data.length; ++i) {
+				var currentCoordinate = data[i];
+
+				var coordinate = {
+					x: currentCoordinate.x,
+					y: latitudeLimits.min + (latitudeLimits.max - currentCoordinate.z),
+					depth: currentCoordinate.y,
+					richter: currentCoordinate.richter,
+					timeAgo: currentCoordinate.timeAgo,
+					marker: angular.copy(currentCoordinate.marker)
+				}
+
+				coordinate.marker.radius = 1 + (coordinate.richter / 6) * 8;
+				
+				result.push(coordinate);
+			}
+
+			return result;
+		}
 
 		function getChartCoordinatesForEarthquakes(data) {
 			var nowInUnixTime = new Date().getTime();
@@ -88,17 +114,21 @@ app.controller("MapController", [
 		}
 
 		function addEarthquakesToChart(data, firstDraw) {
-			if(!currentChart) {
+			if(!current3dChart || !current2dChart) {
 				return;
 			}
 
 			var coordinates = getChartCoordinatesForEarthquakes(data);
+			var coordinates2d = get3dCoordinatesAs2d(coordinates);
+
 			for(var i = 0; i < coordinates.length; ++i) {
-				currentChart.series[0].addPoint(coordinates[i], !firstDraw);
+				current3dChart.series[0].addPoint(coordinates[i], !firstDraw);
+				current2dChart.series[0].addPoint(coordinates2d[i], !firstDraw);
 			}
 
 			if(firstDraw) {
-				currentChart.redraw();
+				current3dChart.redraw();
+				current2dChart.redraw();
 			}
 		}
 
@@ -200,9 +230,10 @@ app.controller("MapController", [
 					var currentEarthquakeVerified = currentEarthquake.verified;
 					var currentVersionOfThisEarthquakeVerified = earthquakes[currentEarthquake.occuredAt].verified;
 
+					updateEarthquake(earthquakes[currentEarthquake.occuredAt], currentEarthquake);
 					if(currentEarthquakeVerified && !currentVersionOfThisEarthquakeVerified) {
-						console.log("An earthquake has been verified, updating it's fields.");
-						updateEarthquake(earthquakes[currentEarthquake.occuredAt], currentEarthquake);
+						console.log("Previously unverified earthquake has been verified, updating it's fields.");
+
 						if($scope.graphDisplayOnlyVerified) {
 							result.push(currentEarthquake);
 						}
@@ -232,7 +263,8 @@ app.controller("MapController", [
 
 		function setInitialEarthquakeData(data) {
 			var quakes = newEarthquakes(data);
-			makeNewChart([]);
+			makeNew3dChart([]);
+			makeNew2dChart([]);
 			if(quakes.length > 0) {
 				addEarthquakesToChart(quakes, true);
 			}
@@ -282,12 +314,12 @@ app.controller("MapController", [
 			});
 		}
 
-		function makeNewChart(data) {
-			if(currentChart) {
-				currentChart.destroy();
+		function makeNew3dChart(data) {
+			if(current3dChart) {
+				current3dChart.destroy();
 			}
 
-			currentChart = new Highcharts.Chart({
+			current3dChart = new Highcharts.Chart({
 				chart: {
 					renderTo: 'volcano-chart',
 					margin: 100,
@@ -305,7 +337,7 @@ app.controller("MapController", [
 							side: { size: 1, color: 'rgba(0,0,0,0.06)' }
 						}
 					},
-					height: window.innerHeight - 90,
+					height: window.innerHeight - 160,
 				},
 				tooltip: {
 					formatter: function () {
@@ -318,10 +350,7 @@ app.controller("MapController", [
 					}
 				},
 				title: {
-					text: 'Bardarbunga'
-				},
-				subtitle: {
-					text: "3d visual - updated every " + $scope.refreshRate+ " sec"
+					text: null
 				},
 				plotOptions: {
 					scatter: {
@@ -378,7 +407,84 @@ app.controller("MapController", [
 				}],
 			});
 
-			registerClickEventOnChart(currentChart);
+			registerClickEventOnChart(current3dChart);
+		}
+
+		function makeNew2dChart(data) {
+			if(current2dChart) {
+				current2dChart.destroy();
+			}
+
+			current2dChart = new Highcharts.Chart({
+				chart: {
+					renderTo: "volcano-chart-satellite",
+					type: "scatter",
+					events: {
+						load: function() {
+							this.renderer.image("http://maps.googleapis.com/maps/api/staticmap?center=64.775,-17&zoom=7&size=320x320&maptype=satellite", 57, 10, 260, 260).add();
+						}
+					},
+					width: 320,
+					height: 320,
+				},
+				title: {
+					text: null
+				},
+				xAxis: {
+					min: -18.74489,
+					tickInterval: 1,
+					max: -15.24208,
+					title: {
+						enabled: true,
+						text: 'Longitude'
+					},
+					startOnTick: false,
+					endOnTick: false,
+					showLastLabel: false
+				},
+				yAxis: {
+					min: 64.015257,
+					tickInterval: 0.5,
+					max: 65.522508,
+					title: {
+						text: 'Latitude'
+					},
+					startOnTick: false,
+					endOnTick: false,
+					showLastLabel: false
+				},
+				legend: {
+					enabled: false
+				},
+				plotOptions: {
+					scatter: {
+						marker: {
+							states: {
+								hover: {
+									enabled: false,
+								}
+							}
+						}
+					}
+				},
+				tooltip: {
+					formatter: function () {
+						var result = "";
+		
+						result += "<p><strong>Happened</strong> " + this.point.timeAgo + ", ";
+						result += "<strong>magnitude</strong> " + this.point.richter + "</p>, ";
+						result += "<strong>depth</strong> " + this.point.depth + "km</p> ";
+
+						return result;
+					}
+				},
+				series: [{
+					name: 'Earthquakes',
+					color: 'rgba(223, 83, 83, .5)',
+					data: data,
+					turboThreshold: 13337
+				}]
+			});
 		}
 
 		$scope.earthquakeTableColor = function(earthquake) {

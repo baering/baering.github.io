@@ -23,11 +23,6 @@ body {
 	left: 20px;
 }
 
-.mila {
-	opacity: 0.4;
-	margin-bottom: 10px;
-}
-
 .credit-list {
 	position: fixed;
 	bottom: 0;
@@ -42,6 +37,12 @@ body {
 
 .earthquake-not-verified {
 	color: #555;
+}
+
+#volcano-chart-satellite {
+	overflow: hidden;
+	width: 320px;
+	height: 320px;
 }
 
 /*
