@@ -299,7 +299,7 @@ app.controller("VisualizationController", [
 				controls.update();
 
 				camera.updateProjectionMatrix(true);
-				checkIfEarthquakeIsBeingHovered();
+				//checkIfEarthquakeIsBeingHovered();
 			}
 			render();
 
@@ -363,9 +363,6 @@ app.controller("VisualizationController", [
 
 			var sphereGeometry = new THREE.SphereGeometry( 0.01, 0.01, 0.01 );
 			var sphereMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, shading: THREE.FlatShading } );
-
-			//testSphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-			//scene.add(testSphere);
 
 			visualizationLoop();
 		}
