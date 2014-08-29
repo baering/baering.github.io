@@ -2,7 +2,7 @@ app.factory("EarthquakeService", [
     "$http",
     function($http) {
         return {
-            getEarthquakesLastHours: function(hours) {
+            getEarthquakesLastHours: function(hours, getAllQuakes) {
                 return $http.get("http://isapi.rasmuskr.dk/api/earthquakes/?date=" + hours + "-hoursago").then(
                     function(response) {
                         var earthquakes = [];
@@ -11,7 +11,7 @@ app.factory("EarthquakeService", [
                             for(var i = 0; i < response.data.items.length; ++i) {
                                 var currentEarthquakeData = response.data.items[i];
                                 var earthquake = new Earthquake(currentEarthquakeData);
-                                if(earthquake.isFromBardarbunga()) {
+                                if(earthquake.isFromBardarbunga() || getAllQuakes) {
                                     earthquakes.push(earthquake);
                                 }
                             }

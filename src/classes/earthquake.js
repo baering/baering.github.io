@@ -46,3 +46,24 @@ Earthquake.prototype.color = function(now) {
 		return "rgba(0, 0, 102," + opacity + ")";
 	}
 };
+
+Earthquake.prototype.colorHex = function(now) {
+	var diff = now - this.occuredAt;
+	var hours = diff / (60 * 60 * 1000);
+
+	if(hours <= 4) {
+		return 0xff0000;
+	}
+	else if(hours <= 12) {
+		return 0xff6600;
+	}
+	else if(hours <= 24) {
+		return 0xffff00;
+	}
+	else if(hours <= 36) {
+		return 0x3366cc;
+	}
+	else {
+		return 0x0000ff;
+	}
+}
