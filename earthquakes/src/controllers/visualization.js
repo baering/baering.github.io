@@ -16,29 +16,94 @@ app.controller("VisualizationController", [
 		var pointClouds;
 
 		var earthquakes = {};
+		var earthquakesAsList = [];
+
+		var REAL_TIME_UPDATE_TIMER = 60000;
 
 		$scope.hoursBack = 48;
 		function getLatestEarthquakes() {
-			earthquakeLimitTimeout = undefined;
 			EarthquakeService.getEarthquakesLastHours($scope.hoursBack, true).then(function(data) {
-				var quakes = data;
-				for(var i = 0; i < quakes.length; ++i) {
-					var quake = quakes[i];
+				var newEarthquakes = getNewEarthquakes(data);
+				if(newEarthquakes.length > 0) {
+					registerNewEarthquakes(newEarthquakes);
+					addEarthquakesToChart(earthquakesAsList);
 
-					earthquakes[quake.occuredAt] = quake;
+					console.log(newEarthquakes.length + " new earthquakes added to visualization");
 				}
-
-				addEarthquakes(quakes);
+				$timeout(getRealTimeEarthquakes, REAL_TIME_UPDATE_TIMER);
 			});
 		}
 
-		var earthquakeLimitTimeout;
-		$scope.earthquakeLimitChanged = function() {
-			if(earthquakeLimitTimeout) {
-				$timeout.cancel(earthquakeLimitTimeout);
+		function updateEarthquakeList() {
+			var ids = Object.keys(earthquakes);
+			earthquakesAsList = [];
+			for(var i = 0; i < ids.length; ++i) {
+				earthquakesAsList.push(earthquakes[ids[i]]);
 			}
-			earthquakeLimitTimeout = $timeout(getLatestEarthquakes, 1000);
-		};
+		}
+
+		function getNewEarthquakes(data) {
+			var result = [];
+
+			for(var i = 0; i < data.length; ++i) {
+				var currentEarthquake = data[i];
+				var dataForCurrentEarthquake = earthquakes[currentEarthquake.occuredAt];
+
+				if(dataForCurrentEarthquake === undefined) {
+					result.push(currentEarthquake);
+				}
+				else {
+					if(dataForCurrentEarthquake.size !== currentEarthquake.size) {
+						result.push(currentEarthquake);
+					}
+				}
+			}
+
+			return result;
+		}
+
+		function oldEarthquakeWasUpdated(newEarthquakes) {
+			var count = 0;
+			var atLeastOneWasUpdated = false;
+			for(var i = 0; i < newEarthquakes.length; ++i) {
+				var currentEarthquake = newEarthquakes[i];
+				if(earthquakes[currentEarthquake.occuredAt] !== undefined) {
+					atLeastOneWasUpdated = true;
+					earthquakes[currentEarthquake.occuredAt] = currentEarthquake;
+					++count;
+				}
+			}
+
+			if(count > 0) {
+				console.log(count + " earthquakes were updated since their attributes have changed");
+			}
+
+			return atLeastOneWasUpdated;
+		}
+
+		function registerNewEarthquakes(newEarthquakes) {
+			for(var i = 0; i < newEarthquakes.length; ++i) {
+				var currentEarthquake = newEarthquakes[i];
+
+				earthquakes[currentEarthquake.occuredAt] = currentEarthquake;
+				earthquakesAsList.push(currentEarthquake);
+			}
+		}
+
+		function getRealTimeEarthquakes() {
+			EarthquakeService.getEarthquakesLastHours(1, true).then(function(data) {
+				var newEarthquakes = getNewEarthquakes(data);
+				if(newEarthquakes.length > 0) {
+					if(oldEarthquakeWasUpdated(newEarthquakes)) {
+						updateEarthquakeList();
+					}
+
+					registerNewEarthquakes(newEarthquakes);
+					addEarthquakesToChart(earthquakesAsList);
+				}
+				$timeout(getRealTimeEarthquakes, REAL_TIME_UPDATE_TIMER);
+			});
+		}
 
 		var LONGITUDE_MIN = -25.6;
 		var LONGITUDE_MAX = -12.49595;
@@ -56,7 +121,6 @@ app.controller("VisualizationController", [
 
 		function createHeightmapReference(iceland) {
 			for(var i = 0; i < iceland.geometry.vertices.length; ++i) {
-				
 				var currentVertex = iceland.geometry.vertices[i];
 
 				// Reduce accuracy - no need for all decimal places since the map of iceland is so big
@@ -90,7 +154,7 @@ app.controller("VisualizationController", [
 			var diff = latitude - LATITUDE_MIN;
 			var ratio = diff / LATITUDE_DIFF;
 
-			return - (-8 + (ratio * 16));
+			return -(-8 + (ratio * 16));
 		}
 
 		function mapCoordinatesToVector2(long, lat) {
@@ -222,7 +286,7 @@ app.controller("VisualizationController", [
 			}
 		}
 
-		function addEarthquakes(quakes) {
+		function addEarthquakesToChart(quakes) {
 			removeCurrentEarthquakes();
 
 			pointClouds = createPointCloudsFromEarthquakes(quakes, 0.4, 0.1);
@@ -231,7 +295,6 @@ app.controller("VisualizationController", [
 			}
 
 			$scope.numberOfEarthquakes = quakes.length;
-			//addRandomQuake();
 		}
 
 		function loadIcelandModel(scale) {
@@ -323,6 +386,7 @@ app.controller("VisualizationController", [
 
 			timeSinceLastIntersectionCheck += clock.getDelta();
 		}
+
 		function visualizationLoop() {
 			if(icelandLoaded) {
 				controls.update();
