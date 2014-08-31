@@ -3,7 +3,8 @@
 	<head>
 		<title>Advanced3dBulge</title>
 		<meta http-equiv="content-type" content="text/html" charset="utf-8"/>
-		<meta name="description" content="More detailed 3d rendering of the seismic activity in Bárðarbunga over the last 48 hours" />
+		<meta name="description" content="Visualization of all earthquakes in Iceland in 3d" />
+		<meta name="keywords" content="bárðarbunga, bardarbunga, iceland, volcano, volcanoes, earthquakes, seismic activity, 3dbulge, bæring, baering, real time">
 		<meta property="og:image" content="http://baering.github.io/earthquakes/img/desc.png"/>
 		<link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css">
 
@@ -46,7 +47,8 @@
 			</div>
 
 			<div style="position: fixed; bottom: 1px; left: 10px" ng-show="!loading && hasWebGl && numberOfEarthquakes !== undefined">
-				<p>Showing <strong>{{ numberOfEarthquakes }}</strong> earthquakes</p>
+				<p style="margin: 0; padding 0;">Real time data - updated every 60 sec</p>
+				<p style="margin: 0; padding 0;">Showing <strong>{{ numberOfEarthquakes }}</strong> <span class="text-muted">(verified)</span> earthquakes</p>
 			</div>
 		</div>
 			
