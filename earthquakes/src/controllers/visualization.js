@@ -101,7 +101,7 @@ app.controller("VisualizationController", [
 		}
 
 		function sortEarthquakesBySize(a, b) {
-			return a.size > b.size;
+			return a.size - b.size;
 		}
 
 		function getMapHeightAtLocation(x, z) {
@@ -124,59 +124,88 @@ app.controller("VisualizationController", [
 			}
 		}
 
+		function addEarthquakeToPointCloud(earthquake, indexInCloud, geometry, colors, nowInUnixtime) {
+			var coordinates = mapCoordinatesToVector2(earthquake.longitude, earthquake.latitude);
+			var depth = ((15 / 610) * earthquake.depth);
+
+			var mapHeightAtLocation = getMapHeightAtLocation(coordinates.x, coordinates.z);
+
+			var pX = coordinates.x;
+			var pY = mapHeightAtLocation - depth;
+			var pZ = coordinates.z;
+			var particle = new THREE.Vector3(pX, pY, pZ);
+
+			particle.isEarthquake = true;
+			particle.earthquakeId = earthquake.occuredAt;
+
+			geometry.vertices.push(particle);
+			colors[indexInCloud] = new THREE.Color(earthquake.colorHex(nowInUnixtime));
+		}
+
+		function createPointcloudFromEarthquakeInformation(magnitudeLimit, geometry, colors) {
+			geometry.colors = colors;
+			var pMaterial = new THREE.PointCloudMaterial({
+				size: 0.008 + (Math.pow(0.3 + magnitudeLimit, 3.5) / 1000),
+				map: THREE.ImageUtils.loadTexture("img/quake.png"),
+				vertexColors: true,
+				transparent: true,
+				alphaTest: 0.5,
+			});
+			return new THREE.PointCloud(geometry, pMaterial);
+		}
+
 		function createPointCloudsFromEarthquakes(quakes, start, stepSize) {
 			var now = new Date().getTime();
 
 			var sortedEarthquakes = quakes.sort(sortEarthquakesBySize);
-
 			var pointClouds = [];
 
-			var currentPointCloudParticles = new THREE.Geometry();
+			var currentPointCloudGeometry = new THREE.Geometry();
 			var currentPointCloudColors = [];
-			var earthQuakeIndexInParticleSystem = 0;
+			var earthquakeIndexInPointCloud = 0;
 
-			var currentMagnitudeLimit = start;
-			for(var i = 0; i < sortedEarthquakes.length; ++i) {
-				var currentEarthquake = sortedEarthquakes[i];
-				var quakeMagnitude = currentEarthquake.size;
+			var largestEarthquakeSize = sortedEarthquakes[sortedEarthquakes.length-1].size;
+			var earthquakeIndexToStartAt = 0;
 
-				if(quakeMagnitude <= currentMagnitudeLimit) {
-					var coordinates = mapCoordinatesToVector2(currentEarthquake.longitude, currentEarthquake.latitude);
-					var depth = ((16 / 610) * currentEarthquake.depth);
+			var currentMagnitudeLimit;
+			for(currentMagnitudeLimit = start; currentMagnitudeLimit <= largestEarthquakeSize; currentMagnitudeLimit += stepSize) {
+				for(var i = earthquakeIndexToStartAt; i < sortedEarthquakes.length; ++i) {
+					var currentEarthquake = sortedEarthquakes[i];
+					var quakeMagnitude = currentEarthquake.size;
 
-					var mapHeightAtLocation = getMapHeightAtLocation(coordinates.x, coordinates.z);
-
-					var pX = coordinates.x;
-					var pY = mapHeightAtLocation - depth;
-					var pZ = coordinates.z;
-					var particle = new THREE.Vector3(pX, pY, pZ);
-
-					particle.isEarthquake = true;
-					particle.earthquakeId = currentEarthquake.occuredAt;
-
-					currentPointCloudParticles.vertices.push(particle);
-					currentPointCloudColors[earthQuakeIndexInParticleSystem] = new THREE.Color(currentEarthquake.colorHex(now));
-
-					++earthQuakeIndexInParticleSystem;
-				}
-				else {
-					if(currentPointCloudColors.length > 0) {
-						currentPointCloudParticles.colors = currentPointCloudColors;
-						var pMaterial = new THREE.PointCloudMaterial({
-							size: 0.008 + (Math.pow(0.3 + currentMagnitudeLimit, 3.5) / 1000),
-							map: THREE.ImageUtils.loadTexture("img/quake.png"),
-							vertexColors: true,
-							transparent: true,
-							alphaTest: 0.5
-						});
-						pointClouds.push(new THREE.PointCloud(currentPointCloudParticles, pMaterial));
+					if(quakeMagnitude <= currentMagnitudeLimit) {
+						addEarthquakeToPointCloud(currentEarthquake, earthquakeIndexInPointCloud, currentPointCloudGeometry, currentPointCloudColors, now);
+						++earthquakeIndexInPointCloud;
 					}
-					currentPointCloudParticles = new THREE.Geometry();
-					currentPointCloudColors = [];
-					earthQuakeIndexInParticleSystem = 0;
+					// We need to raise the limit since the magnitude of the current earthquake is larger than the limit
+					else if(quakeMagnitude > currentMagnitudeLimit) {
+						if(currentPointCloudColors.length > 0) {
+							var pointCloud = createPointcloudFromEarthquakeInformation(currentMagnitudeLimit, currentPointCloudGeometry, currentPointCloudColors);
+							pointClouds.push(pointCloud);
 
-					currentMagnitudeLimit += stepSize;
+							currentPointCloudGeometry = new THREE.Geometry();
+							currentPointCloudColors = [];
+							earthquakeIndexInPointCloud = 0;
+						}
+
+						// Start right at this index to save time - earthquakes are all sorted so we can do that
+						earthquakeIndexToStartAt = i;
+
+						// If this is the correct limit to place the current earthquake in
+
+						if(quakeMagnitude - stepSize <= currentMagnitudeLimit) {
+							addEarthquakeToPointCloud(currentEarthquake, earthquakeIndexInPointCloud, currentPointCloudGeometry, currentPointCloudColors, now);
+							++earthquakeIndexInPointCloud;
+						}
+						break;
+					}
 				}
+			}
+
+			// Remember to create the cloud with the biggest earthquakes
+			if(currentPointCloudColors.length > 0) {
+				var pointCloud = createPointcloudFromEarthquakeInformation(currentMagnitudeLimit, currentPointCloudGeometry, currentPointCloudColors);
+				pointClouds.push(pointCloud);
 			}
 
 			return pointClouds;
@@ -189,7 +218,7 @@ app.controller("VisualizationController", [
 					scene.remove(currentCloud);
 					delete currentCloud;
 				}
-				delete pointClouds
+				delete pointClouds;
 			}
 		}
 
@@ -200,6 +229,9 @@ app.controller("VisualizationController", [
 			for(var i = 0; i < pointClouds.length; ++i) {
 				scene.add(pointClouds[i]);
 			}
+
+			$scope.numberOfEarthquakes = quakes.length;
+			//addRandomQuake();
 		}
 
 		function loadIcelandModel(scale) {
@@ -278,8 +310,6 @@ app.controller("VisualizationController", [
 					var vertices = intersection.object.geometry.vertices;
 					var vertex = vertices[intersection.index];
 
-					//testSphere.position.copy(intersection.point);
-
 					newActiveEarthquake(vertex.earthquakeId);
 					timeSinceLastIntersectionCheck = 0;
 				}
@@ -293,13 +323,11 @@ app.controller("VisualizationController", [
 
 			timeSinceLastIntersectionCheck += clock.getDelta();
 		}
-
 		function visualizationLoop() {
 			if(icelandLoaded) {
 				controls.update();
 
 				camera.updateProjectionMatrix(true);
-				//checkIfEarthquakeIsBeingHovered();
 			}
 			render();
 
