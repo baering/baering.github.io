@@ -42,6 +42,24 @@ app.controller("VisualizationController", [
 			}
 		}
 
+		function earthquakeHasChanged(earthquake, current) {
+			if(earthquake.size !== current.size) {
+				return true;
+			}
+			else if(earthquake.longitude !== current.longitude) {
+				return true;
+			}
+			else if(earthquake.latitude !== current.latitude) {
+				return true;
+			}
+			else if(earthquake.depth !== current.depth) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
 		function getNewEarthquakes(data) {
 			var result = [];
 
@@ -53,7 +71,7 @@ app.controller("VisualizationController", [
 					result.push(currentEarthquake);
 				}
 				else {
-					if(dataForCurrentEarthquake.size !== currentEarthquake.size) {
+					if(earthquakeHasChanged(currentEarthquake, dataForCurrentEarthquake)) {
 						result.push(currentEarthquake);
 					}
 				}
@@ -350,43 +368,6 @@ app.controller("VisualizationController", [
 			}
 		}
 
-		var clock;
-		var timeSinceLastIntersectionCheck = 0;
-		function checkIfEarthquakeIsBeingHovered() {
-			var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-
-			projector.unprojectVector( vector, camera );
-
-			raycaster.ray.set(camera.position, vector.sub(camera.position).normalize());
-
-			var intersections;
-			if(timeSinceLastIntersectionCheck > 15 && pointClouds) {
-				intersections = raycaster.intersectObjects(pointClouds);
-			}
-			if(intersections) {
-				var intersection;
-				if(intersections.length > 0) {
-					intersection = intersections[intersections.length - 1];
-				}
-
-				if(intersection) {
-					var vertices = intersection.object.geometry.vertices;
-					var vertex = vertices[intersection.index];
-
-					newActiveEarthquake(vertex.earthquakeId);
-					timeSinceLastIntersectionCheck = 0;
-				}
-			}
-			else {
-				if ($scope.earthquakeActive) {
-					$scope.earthquakeActive = undefined;
-					$scope.$apply();
-				}
-			}
-
-			timeSinceLastIntersectionCheck += clock.getDelta();
-		}
-
 		function visualizationLoop() {
 			if(icelandLoaded) {
 				controls.update();
@@ -415,8 +396,6 @@ app.controller("VisualizationController", [
 		}
 
 		function setUpScene() {
-			clock = new THREE.Clock();
-
 			renderer = new THREE.WebGLRenderer();
 			renderer.setClearColor(0x000000);
 			renderer.setSize(window.innerWidth, window.innerHeight);
@@ -452,9 +431,6 @@ app.controller("VisualizationController", [
 
 			window.addEventListener("resize", resizeScene, false);
 			window.addEventListener("mousemove", updateMousePosition, false );
-
-			var sphereGeometry = new THREE.SphereGeometry( 0.01, 0.01, 0.01 );
-			var sphereMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, shading: THREE.FlatShading } );
 
 			visualizationLoop();
 		}
