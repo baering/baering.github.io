@@ -22,9 +22,9 @@ app.controller("MapController", [
 			return earthquake.size >= $scope.graphDisplayQuakeSize;
 		}
 
-		function earthquakeOccuredInLessThanHours(earthquake, now) {
+		function earthquakeOccuredInLessThanHours(earthquake, nowInUnixTime) {
 			var hoursInMs = $scope.graphDisplayHours * 3600 * 1000;
-			var hoursAgo = now - hoursInMs;
+			var hoursAgo = nowInUnixTime - hoursInMs;
 
 			if(earthquake.occuredAt >= hoursAgo) {
 				return true;
@@ -32,8 +32,8 @@ app.controller("MapController", [
 			return false;
 		}
 
-		function earthquakeMatchesFilters(earthquake, now) {
-			if(earthquakeOccuredInLessThanHours(earthquake, now)) {
+		function earthquakeMatchesFilters(earthquake, nowInUnixTime) {
+			if(earthquakeOccuredInLessThanHours(earthquake, nowInUnixTime)) {
 				if(earthquakeIsEqualOrLargerThanFilter(earthquake)) {
 					if(!$scope.graphDisplayOnlyVerified) {
 						return true;
@@ -61,27 +61,47 @@ app.controller("MapController", [
 			redrawTimeout = $timeout(redrawWithFilter, 1000);
 		};
 
+		function create2dCoordinateFrom3dCoordinate(coordinate3d) {
+			var result = {
+				x: coordinate3d.x,
+				y: latitudeLimits.min + (latitudeLimits.max - coordinate3d.z),
+				depth: coordinate3d.y,
+				richter: coordinate3d.richter,
+				timeAgo: coordinate3d.timeAgo,
+				marker: angular.copy(coordinate3d.marker)
+			};
+			result.marker.radius = 1 + (coordinate3d.richter / 6) * 8;
+			return result;
+		}
+
 		function get3dCoordinatesAs2d(data) {
 			var result = [];
 
 			for(var i = 0; i < data.length; ++i) {
 				var currentCoordinate = data[i];
+				var coordinate2d = create2dCoordinateFrom3dCoordinate(currentCoordinate);
 
-				var coordinate = {
-					x: currentCoordinate.x,
-					y: latitudeLimits.min + (latitudeLimits.max - currentCoordinate.z),
-					depth: currentCoordinate.y,
-					richter: currentCoordinate.richter,
-					timeAgo: currentCoordinate.timeAgo,
-					marker: angular.copy(currentCoordinate.marker)
-				}
-
-				coordinate.marker.radius = 1 + (coordinate.richter / 6) * 8;
-				
-				result.push(coordinate);
+				result.push(coordinate2d);
 			}
 
 			return result;
+		}
+
+		function createCoordinateFromEarthquake(earthquake, nowInUnixTime) {
+			var drawRadius = Math.pow(0.8 + earthquake.size, 2);
+			return {
+				x: earthquake.longitude, 
+				y: earthquake.depth, 
+				z: latitudeLimits.min + (latitudeLimits.max -earthquake.latitude),
+				richter: earthquake.size,
+				timeAgo: $scope.timeSince(earthquake.occuredAt),
+				marker: {
+					fillColor: earthquake.color(nowInUnixTime),
+					lineColor: "#123F3F",
+					lineWidth: 1,
+					radius: drawRadius
+				}
+			}
 		}
 
 		function getChartCoordinatesForEarthquakes(data) {
@@ -91,22 +111,10 @@ app.controller("MapController", [
 			for(var i = 0; i < data.length; ++i) {
 				var currentEarthquake = data[i];
 
-				var drawRadius = Math.pow(0.8 + currentEarthquake.size, 2);
-
 				if(earthquakeMatchesFilters(currentEarthquake, nowInUnixTime)) {
-					result.push({
-						x: currentEarthquake.longitude, 
-						y: currentEarthquake.depth, 
-						z: latitudeLimits.min + (latitudeLimits.max -currentEarthquake.latitude),
-						richter: currentEarthquake.size,
-						timeAgo: $scope.timeSince(currentEarthquake.occuredAt),
-						marker: {
-							fillColor: currentEarthquake.color(nowInUnixTime),
-							lineColor: "#123F3F",
-							lineWidth: 1,
-							radius: drawRadius
-						}
-					});
+					earthquakes[currentEarthquake.occuredAt].coordinateId = result.length;
+
+					result.push(createCoordinateFromEarthquake(currentEarthquake, nowInUnixTime));
 				}
 			}
 
@@ -285,6 +293,38 @@ app.controller("MapController", [
 		}
 		init();
 
+		$scope.mouseOverEarthquake = function(earthquake) {
+			var nowInUnixTime = new Date().getTime();
+
+			if(earthquakeMatchesFilters(earthquake, nowInUnixTime)) {
+				var index = (current3dChart.series[0].data.length-1) - earthquake.coordinateId;
+				var coordinate3d = createCoordinateFromEarthquake(earthquake, nowInUnixTime);
+
+				coordinate3d.marker.fillColor = "#33CC33";
+				coordinate3d.marker.radius *= 1.5;
+
+				current3dChart.series[0].data[index].update(coordinate3d);
+
+				var coordinate2d = create2dCoordinateFrom3dCoordinate(coordinate3d);
+				coordinate2d.marker.radius *= 2;
+				current2dChart.series[0].data[index].update(coordinate2d);
+			}
+		}
+
+		$scope.mouseOutEarthquake = function(earthquake) {
+			var nowInUnixTime = new Date().getTime();
+
+			if(earthquakeMatchesFilters(earthquake, nowInUnixTime)) {
+				var index = (current3dChart.series[0].data.length-1) - earthquake.coordinateId;
+
+				var coordinate3d = createCoordinateFromEarthquake(earthquake, nowInUnixTime);
+				current3dChart.series[0].data[index].update(coordinate3d);
+
+				var coordinate2d = create2dCoordinateFrom3dCoordinate(coordinate3d);
+				current2dChart.series[0].data[index].update(coordinate2d);
+			}
+		}
+
 		var alphaOn3dGraph, betaOn3dGraph;
 		function registerClickEventOnChart(chart) {
 			$(chart.container).bind('mousedown.hc touchstart.hc', function (e) {
@@ -367,6 +407,7 @@ app.controller("MapController", [
 				},
 				plotOptions: {
 					scatter: {
+						animation: false,
 						width: 10,
 						height: 10,
 						depth: 10,

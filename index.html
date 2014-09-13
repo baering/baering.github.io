@@ -68,7 +68,7 @@
 										<th>Depth</th>
 									</thead>
 									<tbody>
-										<tr ng-repeat="earthquake in earthquakes | orderBy: 'occuredAt':true | limitTo: numberOfEarthquakesDisplayedInTable" class="{{ earthquakeTableColor(earthquake) }}">
+										<tr ng-repeat="earthquake in earthquakes | orderBy: 'occuredAt':true | limitTo: numberOfEarthquakesDisplayedInTable" class="{{ earthquakeTableColor(earthquake) }}" ng-mouseenter="mouseOverEarthquake(earthquake)" ng-mouseleave="mouseOutEarthquake(earthquake)">
 											<td>
 												<span class="glyphicon" ng-class="{ 'glyphicon-ok earthquake-verified': earthquake.verified, 'glyphicon-remove earthquake-not-verified': !earthquake.verified }"></span>
 											</td>
