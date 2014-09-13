@@ -45,6 +45,17 @@ body {
 	height: 320px;
 }
 
+.donate {
+	display: inline;
+	position: absolute;
+	top: 15px;
+	opacity: 0.5;
+}
+
+.donate:hover {
+	opacity: 1;
+}
+
 /*
 	http://www.cssreset.com/css3-webkit-animation-shake-links/
 */
