@@ -130,6 +130,9 @@ app.controller("MapController", [
 				current3dChart.redraw();
 				current2dChart.redraw();
 			}
+			else {
+				$scope.graphFilterChange();
+			}
 		}
 
 		var latitudeLimits = {
@@ -209,12 +212,13 @@ app.controller("MapController", [
 			}
 		}
 
-		function updateEarthquake(oldVersion, newVersion) {
-			for(var key in oldVersion) {
-				if(oldVersion.hasOwnProperty(key)) {
-					oldVersion[key] = newVersion[key];
-				}
-			}
+		function updateEarthquake(earthquakeInMemory, newData) {
+			earthquakeInMemory.size = newData.size;
+			earthquakeInMemory.longitude = newData.longitude;
+			earthquakeInMemory.latitude = newData.latitude;
+			earthquakeInMemory.depth = newData.depth;
+			earthquakeInMemory.humanReadableLocation = newData.humanReadableLocation;
+			earthquakeInMemory.verified = newData.verified;
 		}
 
 		function newEarthquakes(data) {
@@ -253,7 +257,7 @@ app.controller("MapController", [
 					if(quakes.length > 0) {
 						console.log("New earthquakes detected from last update. Updating chart.");
 
-						addEarthquakesToChart(quakes);
+						addEarthquakesToChart(quakes, false);
 					}
 
 					$timeout(getEarthquakes, $scope.refreshRate * 1000);
@@ -281,6 +285,7 @@ app.controller("MapController", [
 		}
 		init();
 
+		var alphaOn3dGraph, betaOn3dGraph;
 		function registerClickEventOnChart(chart) {
 			$(chart.container).bind('mousedown.hc touchstart.hc', function (e) {
 				e = chart.pointer.normalize(e);
@@ -305,6 +310,9 @@ app.controller("MapController", [
 						newAlpha = Math.min(100, Math.max(-100, newAlpha));
 						chart.options.chart.options3d.alpha = newAlpha;
 
+						alphaOn3dGraph = newAlpha;
+						betaOn3dGraph = newBeta;
+
 						chart.redraw(false);
 					},
 					'mouseup touchend': function () {
@@ -319,6 +327,11 @@ app.controller("MapController", [
 				current3dChart.destroy();
 			}
 
+			if(!alphaOn3dGraph && !betaOn3dGraph) {
+				alphaOn3dGraph = 10;
+				betaOn3dGraph = 30;
+			}
+
 			current3dChart = new Highcharts.Chart({
 				chart: {
 					renderTo: 'volcano-chart',
@@ -326,8 +339,8 @@ app.controller("MapController", [
 					type: 'scatter',
 					options3d: {
 						enabled: true,
-						alpha: 10,
-						beta: 30,
+						alpha: alphaOn3dGraph,
+						beta: betaOn3dGraph,
 						depth: 275,
 						viewDistance: 5,
 
