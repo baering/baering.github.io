@@ -273,9 +273,8 @@ app.controller("MapController", [
 
 						addEarthquakesToChart(quakes, false);
 					}
-
-					$timeout(getEarthquakes, $scope.refreshRate * 1000);
 				}
+				$timeout(getEarthquakes, $scope.refreshRate * 1000);
 			});
 		}
 
