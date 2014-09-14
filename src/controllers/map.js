@@ -242,6 +242,11 @@ app.controller("MapController", [
 					var currentEarthquakeVerified = currentEarthquake.verified;
 					var currentVersionOfThisEarthquakeVerified = earthquakes[currentEarthquake.occuredAt].verified;
 
+					// If the new version of this earthquake is not verified - but the one in memory is, skip it
+					if(!currentEarthquakeVerified && currentVersionOfThisEarthquakeVerified) {
+						continue;
+					}
+
 					updateEarthquake(earthquakes[currentEarthquake.occuredAt], currentEarthquake);
 					if(currentEarthquakeVerified && !currentVersionOfThisEarthquakeVerified) {
 						console.log("Previously unverified earthquake has been verified, updating it's fields.");
@@ -250,6 +255,7 @@ app.controller("MapController", [
 							result.push(currentEarthquake);
 						}
 					}
+
 				}
 			}
 
