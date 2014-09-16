@@ -4,7 +4,7 @@ function Earthquake(data) {
 	this.longitude = parseFloat(data.long);
 	this.depth = parseFloat(data.depth);
 	this.size = parseFloat(data.size);
-	this.verified = data.verified;
+	this.verified = data.quality === 99;
 
 	var humanReadable = "";
 	humanReadable += data.loc_dist + " ";
