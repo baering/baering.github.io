@@ -121,26 +121,12 @@ app.controller("MapController", [
 			return result.reverse();
 		}
 
-		function addEarthquakesToChart(data, firstDraw) {
+		function addEarthquakesToChart() {
 			if(!current3dChart || !current2dChart) {
 				return;
 			}
 
-			var coordinates = getChartCoordinatesForEarthquakes(data);
-			var coordinates2d = get3dCoordinatesAs2d(coordinates);
-
-			for(var i = 0; i < coordinates.length; ++i) {
-				current3dChart.series[0].addPoint(coordinates[i], !firstDraw);
-				current2dChart.series[0].addPoint(coordinates2d[i], !firstDraw);
-			}
-
-			if(firstDraw) {
-				current3dChart.redraw();
-				current2dChart.redraw();
-			}
-			else {
-				$scope.graphFilterChange();
-			}
+			redrawWithFilter();
 		}
 
 		var latitudeLimits = {
@@ -218,6 +204,7 @@ app.controller("MapController", [
 			if(newEarthquake) {
 				shakeWebCam(biggestNewEarthquakeMagnitude);
 			}
+			return newEarthquake;
 		}
 
 		function updateEarthquake(earthquakeInMemory, newData) {
@@ -229,61 +216,61 @@ app.controller("MapController", [
 			earthquakeInMemory.verified = newData.verified;
 		}
 
-		function newEarthquakes(data) {
-			var result = [];
+		function newEarthquakeDataShouldBeSkipped(currentEarthquake, newEarthquakeData) {
+			// If new data is not verified, but the current data is
+			if(currentEarthquake.verified && !newEarthquakeData.verified) {
+				return true;
+			}
+			// If the size of the new earthquake is less than current
+			else if(newEarthquakeData.size < currentEarthquake.size) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
 
+		function updateEarthquakes(data) {
+			var earthQuakesWereUpdated = false;
 			for(var i = 0; i < data.length; ++i) {
 				var currentEarthquake = data[i];
 
-				if(earthquakes[currentEarthquake.occuredAt] === undefined) {
-					result.push(currentEarthquake);
-				}
-				else {
+				if(earthquakes[currentEarthquake.occuredAt]) {
 					var currentEarthquakeVerified = currentEarthquake.verified;
 					var currentVersionOfThisEarthquakeVerified = earthquakes[currentEarthquake.occuredAt].verified;
 
-					// If the new version of this earthquake is not verified - but the one in memory is, skip it
-					if(!currentEarthquakeVerified && currentVersionOfThisEarthquakeVerified) {
+					if(newEarthquakeDataShouldBeSkipped(earthquakes[currentEarthquake.occuredAt], currentEarthquake)) {
 						continue;
 					}
-
+					earthQuakesWereUpdated = true;
 					updateEarthquake(earthquakes[currentEarthquake.occuredAt], currentEarthquake);
-					if(currentEarthquakeVerified && !currentVersionOfThisEarthquakeVerified) {
-						console.log("Previously unverified earthquake has been verified, updating it's fields.");
-
-						if($scope.graphDisplayOnlyVerified) {
-							result.push(currentEarthquake);
-						}
-					}
-
 				}
 			}
 
-			registerNewEarthquakes(data);
+			if(registerNewEarthquakes(data)) {
+				earthQuakesWereUpdated = true;
+			}
 
-			return result;
+			return earthQuakesWereUpdated;
 		}
 
 		function getEarthquakes() {
 			EarthquakeService.getEarthquakesLastHours(1).then(function(data) {
-				if(data.length > 0) {
-					var quakes = newEarthquakes(data);
-					if(quakes.length > 0) {
-						console.log("New earthquakes detected from last update. Updating chart.");
+				if(updateEarthquakes(data)) {
+					console.log("New earthquakes detected from last update. Updating chart.");
 
-						addEarthquakesToChart(quakes, false);
-					}
+					addEarthquakesToChart();
 				}
 				$timeout(getEarthquakes, $scope.refreshRate * 1000);
 			});
 		}
 
 		function setInitialEarthquakeData(data) {
-			var quakes = newEarthquakes(data);
+			updateEarthquakes(data);
 			makeNew3dChart([]);
 			makeNew2dChart([]);
-			if(quakes.length > 0) {
-				addEarthquakesToChart(quakes, true);
+			if(data.length > 0) {
+				addEarthquakesToChart();
 			}
 
 			$scope.loading = false;
@@ -517,6 +504,7 @@ app.controller("MapController", [
 				},
 				plotOptions: {
 					scatter: {
+						animation: false,
 						marker: {
 							states: {
 								hover: {
