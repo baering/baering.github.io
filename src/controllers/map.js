@@ -217,13 +217,8 @@ app.controller("MapController", [
 			earthquakeInMemory.verified = newData.verified;
 		}
 
-		function newEarthquakeDataShouldBeSkipped(currentEarthquake, newEarthquakeData) {
-			// If new data is not verified, but the current data is
-			if(currentEarthquake.verified && !newEarthquakeData.verified) {
-				return true;
-			}
-			// If the size of the new earthquake is less than current
-			else if(newEarthquakeData.size < currentEarthquake.size) {
+		function newEarthquakeDataShouldBeSkipped(currentEarthquakeData, newEarthquakeData) {
+			if(currentEarthquakeData.quality > newEarthquakeData.quality) {
 				return true;
 			}
 			else {
