@@ -213,6 +213,7 @@ app.controller("MapController", [
 			earthquakeInMemory.latitude = newData.latitude;
 			earthquakeInMemory.depth = newData.depth;
 			earthquakeInMemory.humanReadableLocation = newData.humanReadableLocation;
+			earthquakeInMemory.quality = newData.quality;
 			earthquakeInMemory.verified = newData.verified;
 		}
 
