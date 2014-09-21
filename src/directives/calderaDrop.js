@@ -7,11 +7,13 @@ app.directive("calderaDrop", [
 			templateUrl: "templates/caldera-drop.html",
 			link: function(scope, element, attrs) {
 				scope.randomReloadNumber = 0;
+				var reloadTime = 60 * 5 * 1000;
+				
 				function reloadImg() {
 					scope.randomReloadNumber = Math.random();
-					$timeout(reloadImg, 60000);
+					$timeout(reloadImg, reloadTime);
 				}
-				$timeout(reloadImg, 60000);
+				$timeout(reloadImg, reloadTime);
 			}
 		};
 	}

@@ -547,7 +547,7 @@ app.controller("MapController", [
 		};
 
 		$scope.registerEvent = function(type, action, label) {
-			ga("send", "event", type, action, label, 1)
+			ga("send", "event", type, action, label, 1);
 		}
 
 		// I know jQuery in angular controllers is a sin, sorry.
