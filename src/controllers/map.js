@@ -546,6 +546,10 @@ app.controller("MapController", [
 			return moment(unix).fromNow();
 		};
 
+		$scope.registerEvent = function(type, action, label) {
+			ga("send", "event", type, action, label, 1)
+		}
+
 		// I know jQuery in angular controllers is a sin, sorry.
 		$(".webcam-wrapper").height($(".webcam-wrapper").width() * 0.56);
 	}

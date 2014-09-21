@@ -60,7 +60,7 @@
 				</div>
 
 				<div class="col-lg-7 col-md-12 col-xs-12">
-					<div class="row">
+					<div class="row" id="upper-top-right">
 						<div class="col-md-6 col-xs-6">
 							<p class="text-muted">Location of earthquakes (approximation)</p>
 
@@ -109,16 +109,14 @@
 						</div>
 					</div>
 					
-					<div class="webcam-wrapper">
-						<object type="application/x-shockwave-flash" data="http://www.livefromiceland.is/files/player.swf" width="100%" height="100%" bgcolor="#000000" name="player" tabindex="0" class="webcam-content" ng-class="{ 'shaking': shaking }">
-							<param name="allowfullscreen" value="true">
-							<param name="allowscriptaccess" value="always">
-							<param name="scale" value="exactfit">
-							<param name="seamlesstabbing" value="true">
-							<param name="wmode" value="transparent">
-							<param name="flashvars" value="netstreambasepath=http%3A%2F%2Fwww.livefromiceland.is%2Fwebcams%2Fbardarbunga&amp;id=player&amp;bufferlength=1&amp;wmode=transparent&amp;autostart=true&amp;stretching=fill&amp;skin=%2FResources%2Ffonts%2Fbeelden.zip&amp;file=akureyri.stream&amp;streamer=rtmp%3A%2F%2F213.167.154.50%2Fmila%2F&amp;provider=rtmp&amp;controlbar.position=none">
-						</object>
-					</div>
+					<tabset>
+    					<tab heading="Webcam" ng-click="registerEvent('tab', 'select', 'webcam')">
+    						<webcam></webcam>
+    					</tab>
+    					<tab heading="Caldera drop" ng-click="registerEvent('tab', 'select', 'caldera_drop')">
+    						<caldera-drop></caldera-drop>
+    					</tab>
+    				</tabset>
 				</div>
 			</div>
 		</div>
@@ -129,11 +127,15 @@
 		<script src="thirdparty/angular.min.js"></script>
 		<script src="thirdparty/highcharts.js"></script>
 		<script src="thirdparty/highcharts-3d.js"></script>
+		<script src="thirdparty/ui-bootstrap.min.js"></script>
+		<script src="thirdparty/ui-bootstrap-tpls.min.js"></script>
 
 		<script src="src/classes/earthquake.js"></script>
 
 		<script src="src/app.js"></script>
 		<script src="src/services/earthquake.js"></script>
 		<script src="src/controllers/map.js"></script>
+		<script src="src/directives/webcam.js"></script>
+		<script src="src/directives/calderaDrop.js"></script>
 	</body>
 </html>

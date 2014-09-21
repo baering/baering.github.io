@@ -1,0 +1,11 @@
+<div>
+	<style type="text/css">
+		@-moz-document url-prefix() {
+			.invert-colors {
+				filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'invert\'><feColorMatrix in='SourceGraphic' type='matrix' values='-0.832 0 0 0 0.832 0 -0.832 0 0 0.832 0 0 -0.832 0 0.832 0 0 0 0.832 0'/></filter></svg>#invert");
+			}
+		}
+	</style>
+	<div class='text-center'>Unfortunately this is only available in Icelandic. <a href='img/bb-caldera-explanation.png' target='_blank'>What am I looking at?</a></div>
+	<img ng-src='http://hraun.vedur.is/ja/Bardarb/BARC/barc_gps_3d_is.png?rand={{ randomReloadNumber }}' class='invert-colors' style='width: 100%' />
+</div>

@@ -56,6 +56,12 @@ body {
 	opacity: 1;
 }
 
+.invert-colors {
+    -webkit-filter: invert(83.2%);
+    -moz-filter: invert(83.2%);
+    filter: invert(83.2%);
+}
+
 /*
 	http://www.cssreset.com/css3-webkit-animation-shake-links/
 */

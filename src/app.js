@@ -1,4 +1,4 @@
-var app = angular.module("BulgeApp", []);
+var app = angular.module("BulgeApp", ["ui.bootstrap"]);
 
 /**
  * Dark theme for Highcharts JS
