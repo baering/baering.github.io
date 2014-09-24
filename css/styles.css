@@ -62,6 +62,12 @@ body {
     filter: invert(83.2%);
 }
 
+.frame-credit {
+	position: fixed;
+	bottom: 3px;
+	left: 5px;
+}
+
 /*
 	http://www.cssreset.com/css3-webkit-animation-shake-links/
 */
