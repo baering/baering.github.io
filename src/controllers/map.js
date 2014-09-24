@@ -251,7 +251,7 @@ app.controller("MapController", [
 		}
 
 		function getEarthquakes() {
-			EarthquakeService.getEarthquakesLastHours(1).then(function(data) {
+			EarthquakeService.getEarthquakesLastHours(2).then(function(data) {
 				if(updateEarthquakes(data)) {
 					console.log("New earthquakes detected from last update. Updating chart.");
 
