@@ -20,7 +20,6 @@ app.directive("frameCredit", [
 				else {
 					scope.inFrame = false;
 				}
-				scope.inFrame = true;
 			}
 		};
 	}
