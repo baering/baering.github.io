@@ -20,15 +20,13 @@ app.controller("VisualizationController", [
 
 		var REAL_TIME_UPDATE_TIMER = 60000;
 
-		$scope.hoursBack = 48;
+		$scope.hoursBack = 72;
 		function getLatestEarthquakes() {
 			EarthquakeService.getEarthquakesLastHours($scope.hoursBack, true).then(function(data) {
 				var newEarthquakes = getNewEarthquakes(data);
 				if(newEarthquakes.length > 0) {
 					registerNewEarthquakes(newEarthquakes);
 					addEarthquakesToChart(earthquakesAsList);
-
-					console.log(newEarthquakes.length + " new earthquakes added to visualization");
 				}
 				$timeout(getRealTimeEarthquakes, REAL_TIME_UPDATE_TIMER);
 			});
@@ -90,10 +88,6 @@ app.controller("VisualizationController", [
 					earthquakes[currentEarthquake.occuredAt] = currentEarthquake;
 					++count;
 				}
-			}
-
-			if(count > 0) {
-				console.log(count + " earthquakes were updated since their attributes have changed");
 			}
 
 			return atLeastOneWasUpdated;
@@ -410,10 +404,10 @@ app.controller("VisualizationController", [
 				10000       // Far
 			);
 
-			camera.position.set(6, 2, 3);
+			camera.position.set(0, 11, 0);
 
 			controls = new THREE.OrbitControls(camera);
-			controls.target = new THREE.Vector3( 2.7, -0.2, 0.5 );
+			controls.target = new THREE.Vector3(0, -0.2, 0);
 
 			loadIcelandModel(3);
 
