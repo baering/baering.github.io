@@ -63,6 +63,10 @@ app.controller("VisualizationController", [
 
 			for(var i = 0; i < data.length; ++i) {
 				var currentEarthquake = data[i];
+				if(!currentEarthquake.verified) {
+					continue;
+				}
+
 				var dataForCurrentEarthquake = earthquakes[currentEarthquake.occuredAt];
 
 				if(dataForCurrentEarthquake === undefined) {
