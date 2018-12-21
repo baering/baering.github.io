@@ -3,7 +3,7 @@ app.factory("EarthquakeService", [
     function($http) {
         return {
             getEarthquakesLastHours: function(hours, getAllQuakes) {
-                return $http.get("http://isapi.rasmuskr.dk/api/earthquakes/?date=" + hours + "-hoursago").then(
+                return $http.get("https://earthquakes-is.appspot.com/earthquakes").then(
                     function(response) {
                         var earthquakes = [];
 
