@@ -463,7 +463,7 @@ app.controller("MapController", [
 					type: "scatter",
 					events: {
 						load: function() {
-							this.renderer.image("http://maps.googleapis.com/maps/api/staticmap?center=64.775,-17&zoom=7&size=320x320&maptype=satellite", 57, 10, 260, 260).add();
+							this.renderer.image("/img/2dmap.png", 57, 10, 260, 260).add();
 						}
 					},
 					width: 320,
