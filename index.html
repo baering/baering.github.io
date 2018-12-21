@@ -95,26 +95,6 @@
 						New EQs
 					</h3>
 
-					<tabset>
-    					<tab heading="Webcam" ng-click="registerEvent('tab', 'select', 'webcam')">
-    						<div class="row" style="margin-top: 10px">
-								<div class="col-md-6">
-									<p class="text-muted">Live webcam from <a href="http://www.livefromiceland.is/webcams/bardabunga/" target="_blank">http://www.livefromiceland.is/</a></p>
-								</div>
-								<div class="col-md-6">
-									<span class="pull-right text-muted" ng-show="!shaking">
-										<label>
-											<input ng-model="allowShaking" type="checkbox" /> shake webcam on updates
-										</label>
-									</span>
-								</div>
-							</div>
-    						<webcam></webcam>
-    					</tab>
-    					<tab heading="Caldera drop" ng-click="registerEvent('tab', 'select', 'caldera_drop')">
-    						<caldera-drop></caldera-drop>
-    					</tab>
-    				</tabset>
 				</div>
 			</div>
 		</div>
